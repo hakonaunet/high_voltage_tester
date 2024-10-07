@@ -97,3 +97,6 @@ Desktop.ini
 *.venv
 .env/
 .venv/
+
+# Add any new files or directories to ignore
+utils/test_runner.pyc

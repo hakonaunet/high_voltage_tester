@@ -1,13 +1,19 @@
 # main_frame.py
 
 import customtkinter as ctk
+from utils.test_runner import TestRunner
+from utils import event_system
 
 from ui.widgets import MetersFrame, RotatingLogo, DebuggerPanel
 from ui.middle_frame import MiddleFrame
 from ui.progress_frame import ProgressFrame
 from utils import get_theme_background, MAIN_COLOR
+
 class MainFrame(ctk.CTkFrame):
     def __init__(self, parent):
+        super().__init__(parent)
+        self.test_runner = TestRunner()
+
         bg_color = get_theme_background()
         super().__init__(parent, fg_color=bg_color)
         self.pack(fill="both", expand=True)
@@ -39,7 +45,11 @@ class MainFrame(ctk.CTkFrame):
         # Add meters to main_frame
         self.meters_frame = MetersFrame(self)
         self.meters_frame.grid(row=0, column=3, rowspan=3, sticky="nsew")
-    
+
+        # Register event listeners
+        event_system.register_listener("log_event", self.update_debugger)
+        event_system.register_listener("error_occurred", self.handle_error)
+
     def destroy(self):
         """Override destroy to unregister the theme callback."""
         ctk.AppearanceModeTracker.remove(self.update_theme)  # Corrected
@@ -61,6 +71,18 @@ class MainFrame(ctk.CTkFrame):
         # If there are other widgets or elements that need theme updates, handle them here
 
         self.debugger_panel.update_theme(new_theme)  # Ensure DebuggerPanel updates
+
+    def update_debugger(self, data):
+        message = data.get('message', '')
+        level = data.get('level', 'INFO')
+        # Assume you have access to the DebuggerPanel instance
+        self.debugger_panel.log(message, level)
+
+    def handle_error(self, data):
+        error_message = data.get('error_message', 'An unexpected error occurred.')
+        # Log the error and notify the user
+        self.update_debugger(error_message, level="ERROR")
+        # Optionally, display a popup or notification
 
 if __name__ == "__main__":
     # Initialize the main application window
