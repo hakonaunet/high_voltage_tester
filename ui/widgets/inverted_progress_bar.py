@@ -15,6 +15,7 @@ class InvertedCTkProgressBar(ctk.CTkProgressBar):
         self._change_in_value = None
         self._animation_start_time = None
         self._animation_duration = 1000  # Duration in milliseconds
+        self.positions = [0, 0.036, 0.218, 0.402, 0.582, 0.762, 0.947, 1]
 
         self.after(1, lambda: self.animation_loop())
 
@@ -127,10 +128,12 @@ class InvertedCTkProgressBar(ctk.CTkProgressBar):
         random_value = random.uniform(0, 1)
         self.go_to(random_value)
 
+    def go_to_test_position(self, position):
+        self.go_to(self.positions[position])
+
     def animation_loop(self):
-        positions = [0, 0.036, 0.218, 0.402, 0.582, 0.762, 0.947, 1]
         delay = 0
-        for position in positions:
+        for position in self.positions:
             self.after(delay, lambda pos=position: self.go_to(pos))
             delay += 1000  # Increase delay for each position
         self.after(delay + 100, self.animation_loop)  # Schedule the next loop

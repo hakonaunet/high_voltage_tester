@@ -7,7 +7,7 @@ import numpy as np
 import customtkinter as ctk
 from PIL import Image, ImageTk  # Ensure Pillow is installed
 
-from utils import get_theme_background, MAIN_COLOR
+from utils import get_theme_background, MAIN_COLOR, event_system
 
 class RotatingLogo(ctk.CTkFrame):
     def __init__(self, master=None, size=200, padding_percentage=-0.02, display_text=False, text_above_logo=False):
@@ -97,6 +97,10 @@ class RotatingLogo(ctk.CTkFrame):
 
         # Start animation
         self.after(0, self.update_animation)
+
+        # Register event listeners
+        event_system.register_listener("test_started", self.go_to_random_position)
+        event_system.register_listener("test_terminated", self.return_to_default_position)
 
     def destroy(self):
         """Override destroy to unregister the theme callback."""

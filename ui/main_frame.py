@@ -2,7 +2,7 @@
 
 import customtkinter as ctk
 
-from ui.widgets import MetersFrame, RotatingLogo
+from ui.widgets import MetersFrame, RotatingLogo, DebuggerPanel
 from ui.middle_frame import MiddleFrame
 from ui.progress_frame import ProgressFrame
 from utils import get_theme_background, MAIN_COLOR
@@ -25,13 +25,9 @@ class MainFrame(ctk.CTkFrame):
         self.rotating_logo = RotatingLogo(self, size=500, display_text=True, text_above_logo=True)
         self.rotating_logo.grid(row=0, column=0, pady=(25, 0), sticky="nw")
 
-        # Add textbox below rotating logo
-        self.textbox = ctk.CTkTextbox(self, corner_radius= 15, fg_color=("gray88", "gray17"), border_width=2, border_color=MAIN_COLOR)
-        self.textbox.grid(row=1, column=0, padx=(10, 8), pady=(10, 10), sticky="nsew")
-        lorem_ipsum = ("Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy " +
-                      "eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam " +
-                      "voluptua.\n\n")
-        self.textbox.insert("0.0", "CTkTextbox\n\n" + lorem_ipsum * 20)
+        # Initialize DebuggerPanel instead of directly adding a CTkTextbox
+        self.debugger_panel = DebuggerPanel(self)
+        self.debugger_panel.grid(row=1, column=0, padx=(10, 8), pady=(10, 10), sticky="nsew")
 
         # Replace the middle_frame creation with the new MiddleFrame class
         self.middle_frame = MiddleFrame(self)
@@ -63,6 +59,8 @@ class MainFrame(ctk.CTkFrame):
         self.middle_frame.update_theme(new_theme)  # Add this line to update the MiddleFrame
 
         # If there are other widgets or elements that need theme updates, handle them here
+
+        self.debugger_panel.update_theme(new_theme)  # Ensure DebuggerPanel updates
 
 if __name__ == "__main__":
     # Initialize the main application window
