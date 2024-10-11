@@ -1,5 +1,6 @@
 import customtkinter as ctk
-from utils import MAIN_COLOR, event_system
+from test_logic import event_system
+from utils import MAIN_COLOR
 import time
 
 class DebuggerPanel(ctk.CTkFrame):
