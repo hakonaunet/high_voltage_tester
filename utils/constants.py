@@ -5,6 +5,7 @@ class Colors(Enum):
     ORANGE = "#E76A31"
     GREEN_DEVELOP = "#39FF14"
     NEON_RED = "#fd080a"
+    GRAY = ("gray75", "gray30")
 
 MAIN_COLOR = Colors.GREEN_DEVELOP.value
 
@@ -22,7 +23,7 @@ class TestConstants(Enum):
     VOLTAGE_1530 = 1530
     VOLTAGE_1540 = 1540
     VOLTAGE_1602 = 1602
-    CURRENT_CUT_OFF = 0.004
+    CURRENT_CUT_OFF = 5.2
     RUNTIME = 1.5
     PAUSE_TIME = 1
     TIMEOUT = 10

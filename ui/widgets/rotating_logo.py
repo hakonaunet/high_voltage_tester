@@ -323,7 +323,12 @@ class RotatingLogo(ctk.CTkFrame):
         q4 = np.sqrt(u1) * np.cos(2 * math.pi * u3)
         self.rotation_target_q = np.array([q4, q1, q2, q3])
 
-    def return_to_default_position(self):
+    def return_to_default_position(self, data=None):
+        """
+        Resets the rotating logo to its default position.
+
+        :param data: Optional data passed by the event system.
+        """
         self.rotation_start_q = self.current_rotation_q
         self.rotation_target_q = np.array([1.0, 0.0, 0.0, 0.0])
         self.rotation_start_time = time.time()
@@ -331,7 +336,7 @@ class RotatingLogo(ctk.CTkFrame):
         self.waiting = False
         self.continuous_rotation = False
 
-    def go_to_random_position(self):
+    def go_to_random_position(self, data=None):
         self.rotation_start_q = self.current_rotation_q
         u1, u2, u3 = np.random.uniform(0, 1, 3)
         q1 = np.sqrt(1 - u1) * np.sin(2 * math.pi * u2)

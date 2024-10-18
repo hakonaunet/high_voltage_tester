@@ -8,11 +8,13 @@ from ui.control_frame import ControlFrame
 from ui.left_frame import LeftFrame
 
 class MiddleFrame(StylizedFrame):
-    def __init__(self, parent):
+    def __init__(self, parent, test_runner):
         super().__init__(parent)
         
+        self.test_runner = test_runner
+        
         # Configure grid
-        self.grid_rowconfigure(0, weight=0)
+        self.grid_rowconfigure((0), weight=0)
         self.grid_rowconfigure(tuple(i for i in range(1, 4)), weight=1)
         self.grid_columnconfigure(tuple(j for j in range(3)), weight=1)
         
@@ -28,7 +30,7 @@ class MiddleFrame(StylizedFrame):
         self.left_frame.grid(row=1, column=0, rowspan=2, columnspan=2, padx=(10, 5), pady=(10, 5), sticky="nsew")
         
         # Add Control frame
-        self.control_frame = ControlFrame(self)
+        self.control_frame = ControlFrame(self, self.test_runner)
         self.control_frame.grid(row=1, column=2, rowspan=2, padx=(5, 10), pady=(10, 5), sticky="nsew")
         
         # Use the new TestStatusFrame

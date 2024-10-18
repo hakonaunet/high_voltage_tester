@@ -5,6 +5,7 @@ import time
 
 class DebuggerPanel(ctk.CTkFrame):
     _instance = None
+    _initialized = False
 
     def __new__(cls, *args, **kwargs):
         if cls._instance is None:
@@ -12,12 +13,28 @@ class DebuggerPanel(ctk.CTkFrame):
         return cls._instance
 
     def __init__(self, parent, max_logs=500):
-        super().__init__(parent, corner_radius=15, fg_color=("gray88", "gray17"), border_width=2, border_color=MAIN_COLOR)
+        if self._initialized:
+            return
+        self._initialized = True
+
+        super().__init__(
+            parent, 
+            corner_radius=15, 
+            fg_color=("gray88", "gray17"), 
+            border_width=2, 
+            border_color=MAIN_COLOR
+        )
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
 
         # Initialize the textbox for the debugger panel
-        self.textbox = ctk.CTkTextbox(self, corner_radius=15, fg_color=("gray88", "gray17"), border_width=2, border_color=MAIN_COLOR)
+        self.textbox = ctk.CTkTextbox(
+            self, 
+            corner_radius=15, 
+            fg_color=("gray88", "gray17"), 
+            border_width=2, 
+            border_color=MAIN_COLOR
+        )
         self.textbox.grid(row=0, column=0, padx=(10, 8), pady=(10, 10), sticky="nsew")
         
         # Set initial content
@@ -37,6 +54,14 @@ class DebuggerPanel(ctk.CTkFrame):
         event_system.register_listener("test_started", self.handle_test_started)
         event_system.register_listener("error_occurred", self.handle_error_occurred)
         # Add more listeners as needed
+
+    def clear_log(self):
+        """Clears the debugger log."""
+        self.logs = []
+        self.textbox.configure(state="normal")
+        self.textbox.delete("1.0", "end")
+        self.textbox.insert("0.0", "Debugger Panel\n\n")
+        self.textbox.configure(state="disabled")
 
     def log(self, message, level="INFO"):
         """Add a log message to the debugger panel."""
@@ -65,21 +90,11 @@ class DebuggerPanel(ctk.CTkFrame):
         test_name = data.get('test_name', 'Unnamed Test')
         self.log(f"{test_name} started", "INFO")
         # Trigger UI updates or animations related to test start
-        # Example: self.start_animation()
 
     def handle_error_occurred(self, data):
         error_message = data.get('error_message', 'An error occurred.')
         self.log(error_message, "ERROR")
         # Trigger UI updates or animations related to errors
-        # Example: self.show_error_animation()
-
-    def clear_log(self):
-        """Clear the debugger panel."""
-        self.logs.clear()  # Clear the log storage
-        self.textbox.configure(state="normal")
-        self.textbox.delete("1.0", "end")
-        self.textbox.insert("0.0", "Debugger Panel\n\n")
-        self.textbox.configure(state="disabled")
 
     def update_theme(self, new_theme):
         """Update the theme of the debugger panel."""
@@ -89,3 +104,10 @@ class DebuggerPanel(ctk.CTkFrame):
         else:
             self.configure(fg_color="gray88")
             self.textbox.configure(fg_color="gray88")
+
+    def destroy(self):
+        """Override destroy to unregister event listeners."""
+        event_system.unregister_listener("log_event", self.handle_log_event)
+        event_system.unregister_listener("test_started", self.handle_test_started)
+        event_system.unregister_listener("error_occurred", self.handle_error_occurred)
+        super().destroy()

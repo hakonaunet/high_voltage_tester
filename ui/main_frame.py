@@ -1,18 +1,20 @@
 # main_frame.py
 
 import customtkinter as ctk
+from CTkMessagebox import CTkMessagebox
+
 from test_logic.test_runner import TestRunner
 from test_logic import event_system
-
 from ui.widgets import MetersFrame, RotatingLogo, DebuggerPanel
 from ui.middle_frame import MiddleFrame
 from ui.progress_frame import ProgressFrame
 from utils import get_theme_background
 
 class MainFrame(ctk.CTkFrame):
-    def __init__(self, parent):
+    def __init__(self, parent, test_runner):
         super().__init__(parent)
-        self.test_runner = TestRunner()
+
+        self.test_runner = test_runner
 
         bg_color = get_theme_background()
         super().__init__(parent, fg_color=bg_color)
@@ -36,7 +38,7 @@ class MainFrame(ctk.CTkFrame):
         self.debugger_panel.grid(row=1, column=0, padx=(10, 8), pady=(10, 10), sticky="nsew")
 
         # Replace the middle_frame creation with the new MiddleFrame class
-        self.middle_frame = MiddleFrame(self)
+        self.middle_frame = MiddleFrame(self, self.test_runner)
         self.middle_frame.grid(row=0, column=1, rowspan=3, pady=(10, 10), sticky="nsew")
 
         self.progress_frame = ProgressFrame(self)
@@ -45,10 +47,6 @@ class MainFrame(ctk.CTkFrame):
         # Add meters to main_frame
         self.meters_frame = MetersFrame(self)
         self.meters_frame.grid(row=0, column=3, rowspan=3, sticky="nsew")
-
-        # Register event listeners
-        event_system.register_listener("log_event", self.update_debugger)
-        event_system.register_listener("error_occurred", self.handle_error)
 
     def destroy(self):
         """Override destroy to unregister the theme callback."""
@@ -81,8 +79,9 @@ class MainFrame(ctk.CTkFrame):
     def handle_error(self, data):
         error_message = data.get('error_message', 'An unexpected error occurred.')
         # Log the error and notify the user
-        self.update_debugger(error_message, level="ERROR")
+        self.debugger_panel.log(error_message, "ERROR")
         # Optionally, display a popup or notification
+        CTkMessagebox(title="Error", message=error_message, icon="cancel")
 
 if __name__ == "__main__":
     # Initialize the main application window

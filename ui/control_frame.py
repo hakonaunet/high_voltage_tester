@@ -1,15 +1,18 @@
-import customtkinter as ctk
 from ui.widgets.stylized_frame import StylizedFrame
 from ui.widgets.headings import Heading2
+from ui.widgets import StylizedButton
+from test_logic.event_system import event_system
 
 class ControlFrame(StylizedFrame):
-    def __init__(self, parent):
+    def __init__(self, parent, test_runner):
         super().__init__(parent)
+
+        self.test_runner = test_runner
 
         # Configure grid
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=0)
-        for i in range(1, 5):
+        for i in range(1, 6):
             self.grid_rowconfigure(i, weight=1)
 
         # Add heading
@@ -17,11 +20,45 @@ class ControlFrame(StylizedFrame):
         self.heading.grid(row=0, column=0, pady=(20, 10), padx=10, sticky="ew")
 
         # Add buttons
-        self.start_button = ctk.CTkButton(self, text="Start test", corner_radius=15, height=60, font=("Arial", 18, "bold"))
-        self.start_button.grid(row=1, column=0, pady=(10, 5), padx=10)
+        self.start_button = StylizedButton(
+            self, 
+            text="Start Test", 
+            command=self.start_test
+        )
+        self.start_button.grid(row=1, column=0, pady=(20, 5), padx=10)
 
-        self.stop_button = ctk.CTkButton(self, text="Stop test", corner_radius=15, height=60, font=("Arial", 18, "bold"))
-        self.stop_button.grid(row=2, column=0, pady=5, padx=10)
+        self.stop_button = StylizedButton(
+            self, 
+            text="Stop Test", 
+            command=self.stop_test
+        )
+        self.stop_button.grid(row=2, column=0, pady=(20, 5), padx=10)
 
-        self.reset_button = ctk.CTkButton(self, text="Reset test", corner_radius=15, height=60, font=("Arial", 18, "bold"))
-        self.reset_button.grid(row=3, column=0, pady=(5, 10), padx=10)
+        self.reset_button = StylizedButton(
+            self, 
+            text="Reset Test", 
+            command=self.reset_test
+        )
+        self.reset_button.grid(row=3, column=0, pady=(20, 10), padx=10)
+
+    def start_test(self):
+        serial_number = self.get_serial_number()
+        self.test_runner.run_tests(serial_number)
+
+    def stop_test(self):
+        self.test_runner.stop_tests()
+
+    def reset_test(self):
+        # Implement reset functionality
+        event_system.dispatch_event("log_event", {"message": "Resetting tests.", "level": "INFO"})
+        self.test_runner.stop_tests()
+        self.test_runner.results = []
+        self.test_runner.is_running = False
+        self.test_runner.serial_number = None
+        # Optionally, reset hardware state
+        self.test_runner.ni_usb_6525.set_all_relays_off()
+
+    def get_serial_number(self):
+        # Implement a method to retrieve the serial number from the UI
+        # For example, get it from an entry widget
+        return "SN123456"  # Placeholder

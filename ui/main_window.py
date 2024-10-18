@@ -1,11 +1,13 @@
 # main_window.py
 
 import os
+
 import customtkinter as ctk
+
 from ui.widgets import MenuBar  # Import the MenuBar class
 from ui.main_frame import MainFrame  # Import the MainFrame class
 from utils import MAIN_COLOR  # Import the MAIN_COLOR constant
-
+from test_logic.event_system import event_system
 # Get the current directory
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -16,8 +18,10 @@ theme_path = os.path.join(current_dir, "themes", "et_green_develop.json")
 ctk.set_default_color_theme(theme_path)
 
 class MainWindow(ctk.CTk):
-    def __init__(self):
+    def __init__(self, test_runner):
         super().__init__()
+
+        self.test_runner = test_runner
 
         self.title("High Voltage Tester")
         self.geometry("1600x900")
@@ -30,8 +34,11 @@ class MainWindow(ctk.CTk):
         self.menu_bar = MenuBar(self)
 
         # Create and attach the main frame
-        self.main_frame = MainFrame(self)
+        self.main_frame = MainFrame(self, self.test_runner)
+
+    def destroy(self):
+        """Override destroy to ensure proper cleanup."""
+        super().destroy()
 
 if __name__ == "__main__":
-    app = MainWindow()
-    app.mainloop()
+    pass

@@ -3,6 +3,7 @@ import time
 import random
 
 import customtkinter as ctk
+from test_logic import event_system
 
 class InvertedCTkProgressBar(ctk.CTkProgressBar):
     def __init__(self, master=None, **kwargs):
@@ -17,7 +18,8 @@ class InvertedCTkProgressBar(ctk.CTkProgressBar):
         self._animation_duration = 1000  # Duration in milliseconds
         self.positions = [0, 0.036, 0.218, 0.402, 0.582, 0.762, 0.947, 1]
 
-        self.after(1, lambda: self.animation_loop())
+        # Add event listener
+        event_system.register_listener("progress_update", self.on_progress_update)
 
     def _draw(self, no_color_updates=False):
         # Call the parent class's _draw method to set up the canvas
@@ -78,29 +80,21 @@ class InvertedCTkProgressBar(ctk.CTkProgressBar):
                 fill=self._apply_appearance_mode(self._progress_color),
                 outline=self._apply_appearance_mode(self._progress_color)
             )
-        
-
-    def on_click(self, event):
-        # Generate a random value between 0 and 1
-        random_value = random.uniform(0, 1)
-        
-        # Call animate_to with the random value
-        self.go_to(random_value)
-        
-        # Reset the 3-second timer
-        if self.reset_timer_id is not None:
-            self.after_cancel(self.reset_timer_id)
-        self.reset_timer_id = self.after(3000, self.go_to_zero)
 
     def smooth_easing(self, t):
         return 4 * t * t * t if t < 0.5 else 1 - ((-2 * t + 2) ** 3) / 2
-    
+
     def go_to(self, target_value):
-        duration = 1000  # duration in milliseconds
+        # Cancel any existing animation
+        if self._animation_after_id is not None:
+            self.after_cancel(self._animation_after_id)
+            self._animation_after_id = None
+
+        duration = self._animation_duration  # duration in milliseconds
         start_time = None
         start_value = self.get()
         change_in_value = target_value - start_value
-        
+
         def animate():
             nonlocal start_time
             if start_time is None:
@@ -114,22 +108,20 @@ class InvertedCTkProgressBar(ctk.CTkProgressBar):
             self.current_value = current_value
 
             if t < 1:
-                self.after(16, animate)  # roughly 60 frames per second
+                self._animation_after_id = self.after(16, animate)  # Schedule next frame
             else:
                 self.set(target_value)  # Ensure we end at the exact target value
                 self.current_value = target_value
-        
+                self._animation_after_id = None  # Reset the animation ID
+
         animate()
-    
+
     def go_to_zero(self):
         self.go_to(0)
-    
+
     def go_to_random_position(self):
         random_value = random.uniform(0, 1)
         self.go_to(random_value)
-
-    def go_to_test_position(self, position):
-        self.go_to(self.positions[position])
 
     def animation_loop(self):
         delay = 0
@@ -137,3 +129,8 @@ class InvertedCTkProgressBar(ctk.CTkProgressBar):
             self.after(delay, lambda pos=position: self.go_to(pos))
             delay += 1000  # Increase delay for each position
         self.after(delay + 100, self.animation_loop)  # Schedule the next loop
+
+    def on_progress_update(self, event_data):
+        position = event_data.get("position", 0)
+        if 0 <= position <= 7:
+            self.after(0, self.go_to, self.positions[position])

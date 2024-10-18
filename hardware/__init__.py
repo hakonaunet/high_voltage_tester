@@ -1,0 +1,1 @@
+from .ni_usb_6525 import NiUsb6525
