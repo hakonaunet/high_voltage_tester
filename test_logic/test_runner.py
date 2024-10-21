@@ -6,7 +6,6 @@ import socket
 
 from test_logic import event_system
 from test_logic.sub_test import SubTest
-# from hardware.ni_usb_6525 import NiUsb6525  # Removed
 
 # Import the new HardwareClient
 from hardware.hardware_client import HardwareClient

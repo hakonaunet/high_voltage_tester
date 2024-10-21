@@ -1,19 +1,19 @@
 import customtkinter
 from ui.main_window import MainWindow
-from hardware.ni_usb_6525 import NiUsb6525
 from test_logic.test_runner import TestRunner
+from hardware import HardwareClient
 
 def main():
-    ni_usb_6525 = NiUsb6525()
-    test_runner = TestRunner(ni_usb_6525)
-    app = MainWindow(test_runner)
+    hardware_client = HardwareClient()
+    test_runner = TestRunner(hardware_client)
+    app = MainWindow(test_runner, hardware_client)
     
     def clean_exit():
         """Handles the cleanup process before application exit."""
         try:
-            ni_usb_6525.close()
+            hardware_client.close()
         except Exception as e:
-            print(f"Error closing NiUsb6525: {e}")
+            print(f"Error closing HardwareClient: {e}")
         try:
             test_runner.close()
         except Exception as e:

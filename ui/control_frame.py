@@ -1,13 +1,14 @@
 from ui.widgets.stylized_frame import StylizedFrame
 from ui.widgets.headings import Heading2
-from ui.widgets import StylizedButton
+from ui.widgets import StylizedButton, SerialNumberWindow
 from test_logic.event_system import event_system
 
 class ControlFrame(StylizedFrame):
-    def __init__(self, parent, test_runner):
+    def __init__(self, parent, test_runner, hardware_client):
         super().__init__(parent)
 
         self.test_runner = test_runner
+        self.hardware_client = hardware_client  # Ensure hardware_client is passed correctly
 
         # Configure grid
         self.grid_columnconfigure(0, weight=1)
@@ -59,6 +60,5 @@ class ControlFrame(StylizedFrame):
         self.test_runner.ni_usb_6525.set_all_relays_off()
 
     def get_serial_number(self):
-        # Implement a method to retrieve the serial number from the UI
-        # For example, get it from an entry widget
-        return "SN123456"  # Placeholder
+        self.serial_number_window = SerialNumberWindow(self, self.hardware_client)
+        self.serial_number_window.grab_set()  # Optional: Make the window modal

@@ -1,1 +1,1 @@
-from .ni_usb_6525 import NiUsb6525
+from .hardware_client import HardwareClient

@@ -53,7 +53,6 @@ class DebuggerPanel(ctk.CTkFrame):
         event_system.register_listener("log_event", self.handle_log_event)
         event_system.register_listener("test_started", self.handle_test_started)
         event_system.register_listener("error_occurred", self.handle_error_occurred)
-        # Add more listeners as needed
 
     def clear_log(self):
         """Clears the debugger log."""
@@ -89,12 +88,10 @@ class DebuggerPanel(ctk.CTkFrame):
     def handle_test_started(self, data):
         test_name = data.get('test_name', 'Unnamed Test')
         self.log(f"{test_name} started", "INFO")
-        # Trigger UI updates or animations related to test start
 
     def handle_error_occurred(self, data):
         error_message = data.get('error_message', 'An error occurred.')
         self.log(error_message, "ERROR")
-        # Trigger UI updates or animations related to errors
 
     def update_theme(self, new_theme):
         """Update the theme of the debugger panel."""

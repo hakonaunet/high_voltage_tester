@@ -11,10 +11,11 @@ from ui.progress_frame import ProgressFrame
 from utils import get_theme_background
 
 class MainFrame(ctk.CTkFrame):
-    def __init__(self, parent, test_runner):
+    def __init__(self, parent, test_runner, hardware_client):
         super().__init__(parent)
 
         self.test_runner = test_runner
+        self.hardware_client = hardware_client
 
         bg_color = get_theme_background()
         super().__init__(parent, fg_color=bg_color)
@@ -38,7 +39,7 @@ class MainFrame(ctk.CTkFrame):
         self.debugger_panel.grid(row=1, column=0, padx=(10, 8), pady=(10, 10), sticky="nsew")
 
         # Replace the middle_frame creation with the new MiddleFrame class
-        self.middle_frame = MiddleFrame(self, self.test_runner)
+        self.middle_frame = MiddleFrame(self, self.test_runner, self.hardware_client)
         self.middle_frame.grid(row=0, column=1, rowspan=3, pady=(10, 10), sticky="nsew")
 
         self.progress_frame = ProgressFrame(self)

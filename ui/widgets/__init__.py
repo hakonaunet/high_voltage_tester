@@ -8,3 +8,4 @@ from .stylized_entry import StylizedEntry
 from .stylized_button import StylizedButton
 from .stylized_frame import StylizedFrame
 from .stylized_label import StylizedLabel
+from .serial_number_window import SerialNumberWindow

@@ -18,11 +18,11 @@ theme_path = os.path.join(current_dir, "themes", "et_green_develop.json")
 ctk.set_default_color_theme(theme_path)
 
 class MainWindow(ctk.CTk):
-    def __init__(self, test_runner):
+    def __init__(self, test_runner, hardware_client):
         super().__init__()
 
         self.test_runner = test_runner
-
+        self.hardware_client = hardware_client
         self.title("High Voltage Tester")
         self.geometry("1600x900")
         
@@ -34,7 +34,7 @@ class MainWindow(ctk.CTk):
         self.menu_bar = MenuBar(self)
 
         # Create and attach the main frame
-        self.main_frame = MainFrame(self, self.test_runner)
+        self.main_frame = MainFrame(self, self.test_runner, self.hardware_client)
 
     def destroy(self):
         """Override destroy to ensure proper cleanup."""
