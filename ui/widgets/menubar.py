@@ -2,6 +2,8 @@
 
 import customtkinter as ctk
 from CTkMenuBar import CTkMenuBar, CustomDropdownMenu  # Ensure this module is accessible
+from test_logic import event_system
+from .relay_selection_window import RelaySelectionWindow
 
 class MenuBar:
     def __init__(self, master):
@@ -37,6 +39,7 @@ class MenuBar:
         sub_theme = dropdown_settings.add_submenu("Theme")
         sub_theme.add_option(option="Light", command=self.set_light_theme)
         sub_theme.add_option(option="Dark", command=self.set_dark_theme)
+        dropdown_settings.add_option(option="Select default relay", command=self.on_select_default_relay)
 
         # Create dropdown for 'About' menu
         dropdown_about = CustomDropdownMenu(widget=about_menu)
@@ -45,13 +48,20 @@ class MenuBar:
     def set_light_theme(self):
         """Set the appearance mode to Light and notify all widgets."""
         ctk.set_appearance_mode("Light")
-        # AppearanceModeTracker will automatically notify registered callbacks
 
     def set_dark_theme(self):
         """Set the appearance mode to Dark and notify all widgets."""
         ctk.set_appearance_mode("Dark")
-        # AppearanceModeTracker will automatically notify registered callbacks
 
+    def on_select_default_relay(self):
+        # Create and display the relay selection window
+        relay_window = RelaySelectionWindow(self.master)
+        self.master.wait_window(relay_window)  # Wait for the window to be closed
+
+        # Get the user's selection
+        selected_relay = relay_window.result
+
+        event_system.dispatch_event("default_relay_selected", {"selected_relay": selected_relay})
 # Example usage
 if __name__ == "__main__":
     app = ctk.CTk()  # Initialize the main CTk window

@@ -51,7 +51,7 @@ class DebuggerPanel(ctk.CTkFrame):
 
         # Register event listeners
         event_system.register_listener("log_event", self.handle_log_event)
-        event_system.register_listener("test_started", self.handle_test_started)
+        event_system.register_listener("sub_test_started", self.handle_sub_test_started)
         event_system.register_listener("error_occurred", self.handle_error_occurred)
 
     def clear_log(self):
@@ -85,7 +85,7 @@ class DebuggerPanel(ctk.CTkFrame):
         level = data.get('level', 'INFO')
         self.log(message, level)
 
-    def handle_test_started(self, data):
+    def handle_sub_test_started(self, data):
         test_name = data.get('test_name', 'Unnamed Test')
         self.log(f"{test_name} started", "INFO")
 
@@ -105,6 +105,6 @@ class DebuggerPanel(ctk.CTkFrame):
     def destroy(self):
         """Override destroy to unregister event listeners."""
         event_system.unregister_listener("log_event", self.handle_log_event)
-        event_system.unregister_listener("test_started", self.handle_test_started)
+        event_system.unregister_listener("sub_test_started", self.handle_sub_test_started)
         event_system.unregister_listener("error_occurred", self.handle_error_occurred)
         super().destroy()

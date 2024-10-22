@@ -10,6 +10,8 @@ from test_logic.sub_test import SubTest
 # Import the new HardwareClient
 from hardware.hardware_client import HardwareClient
 
+from ui.widgets.serial_number_window import SerialNumberWindow 
+
 class TestRunner:
     def __init__(self, hardware_client: HardwareClient):
         self.hardware_client = hardware_client
@@ -29,22 +31,54 @@ class TestRunner:
     def handle_batch_info_cleared(self, data):
         self.batch_info = None
 
-    def run_tests(self, serial_number):
+    def run_tests(self):
+        event_system.dispatch_event("test_started")
         if self.is_running:
             event_system.dispatch_event("error_occurred", {"error_message": "Test already running."})
             return
         if not self.batch_info:
             event_system.dispatch_event("error_occurred", {"error_message": "Batch information not set."})
             return
+        
+        event_system.dispatch_event("progress_update", {"position": 0})
+        serial_number = self.get_serial_number()
+        if serial_number:
+            event_system.dispatch_event("log_event", {"message": f"Submitted serial number: {serial_number}.", "level": "INFO"})
+            event_system.dispatch_event("serial_number_confirmed", {"serial_number": serial_number})
+        else:
+            event_system.dispatch_event("error_occurred", {"error_message": "Serial number not provided."})
+            return
+        
         self.serial_number = serial_number
         self.is_running = True
         self.results = []
         threading.Thread(target=self._execute_tests, daemon=True).start()
 
+    def get_serial_number(self):
+        # Instantiate and display the SerialNumberWindow
+        serial_window = SerialNumberWindow(None)  # Replace 'None' with the appropriate parent if necessary
+        serial_window.grab_set()  # Make the window modal
+        serial_window.wait_window()  # Wait for the window to close
+        return serial_window.serial_number
+
     def _execute_tests(self):
         try:
-            event_system.dispatch_event("progress_update", {"position": 0})
-            self.current_position = 0
+            # Check connection with hardware client
+            if not self.hardware_client.check_connection():
+                event_system.dispatch_event("log_event", {
+                    "message": "Hardware connection check failed. Test execution aborted.",
+                    "level": "ERROR"
+                })
+                event_system.dispatch_event("test_terminated", {})
+                return
+
+            event_system.dispatch_event("log_event", {
+                "message": "Hardware connection confirmed. Starting test execution.",
+                "level": "INFO"
+            })
+
+            event_system.dispatch_event("progress_update", {"position": 1})
+            self.current_position = 1
 
             sub_tests = [
                 SubTest(1, 500), SubTest(2, 500), SubTest(3, 500),
@@ -54,6 +88,9 @@ class TestRunner:
             for i, sub_test in enumerate(sub_tests, start=1):
                 if not self.is_running:
                     break
+                if i > self.current_position:
+                    self.current_position = i
+                    event_system.dispatch_event("progress_update", {"position": i})
                 
                 status = sub_test.run()
                 self.results.append(sub_test.get_result())
@@ -61,11 +98,6 @@ class TestRunner:
                 if status == "ERROR":
                     break
 
-                if i > self.current_position:
-                    self.current_position = i
-                    event_system.dispatch_event("progress_update", {"position": i})
-
-                time.sleep(2)  # 2-second cooldown between sub-tests
 
             if self.is_running:
                 self._upload_results()
@@ -93,24 +125,3 @@ class TestRunner:
     def close(self):
         # Implement any necessary cleanup for TestRunner
         pass
-
-    def run_test(self):
-        try:
-            event_system.dispatch_event("test_started", {"test_name": "Full Test Suite"})
-            
-            for i, voltage in enumerate(self.voltages, start=1):
-                sub_test = SubTest(i, voltage)
-                result = sub_test.run()
-                self.results.append(sub_test.get_result())
-                
-                if result != "SUCCESS":
-                    event_system.dispatch_event("test_terminated", {})
-                    return False
-            
-            event_system.dispatch_event("test_completed", {})
-            return True
-        except Exception as e:
-            error_message = f"Error in test runner: {str(e)}"
-            event_system.dispatch_event("error_occurred", {"error_message": error_message})
-            event_system.dispatch_event("test_terminated", {})
-            return False

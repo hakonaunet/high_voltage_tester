@@ -10,9 +10,8 @@ class SubTest:
 
     def run(self):
         try:
-            event_system.dispatch_event("test_started", {"test_name": f"Sub-test {self.test_number}"})
+            event_system.dispatch_event("sub_test_started", {"test_name": f"Sub-test {self.test_number}", "voltage": self.voltage})
             event_system.dispatch_event("log_event", {"message": f"Setting hi-pot tester to {self.voltage}V", "level": "INFO"})
-            
             
             # Simulate reading current (replace with actual hardware interface)
             self.current = self._simulate_current_measurement()
@@ -27,8 +26,12 @@ class SubTest:
                 self.status = "FAILURE"
                 event_system.dispatch_event("log_event", {"message": f"Sub-test {self.test_number} failed.", "level": "WARNING"})
             
-            # Dispatch sub_test_completed event
-            event_system.dispatch_event("sub_test_completed", {"test_number": self.test_number})
+            # Dispatch the new sub_test_concluded event
+            event_system.dispatch_event("sub_test_concluded", {
+                "test_number": self.test_number,
+                "status": self.status,
+                "current": self.current
+            })
             
             return self.status
 
@@ -37,11 +40,20 @@ class SubTest:
             error_message = f"Error in sub-test {self.test_number}: {str(e)}"
             event_system.dispatch_event("error_occurred", {"error_message": error_message})
             event_system.dispatch_event("log_event", {"message": error_message, "level": "ERROR"})
+            
+            # Dispatch the new sub_test_concluded event for error case
+            event_system.dispatch_event("sub_test_concluded", {
+                "test_number": self.test_number,
+                "status": self.status,
+                "current": self.current  # This might be None in case of an error
+            })
+            
             return self.status
 
     def _simulate_current_measurement(self):
         # Replace this with actual hardware interface
         import random
+        time.sleep(2)
         return random.uniform(0.0, 6)
 
     def get_result(self):

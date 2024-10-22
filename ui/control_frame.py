@@ -1,6 +1,6 @@
 from ui.widgets.stylized_frame import StylizedFrame
 from ui.widgets.headings import Heading2
-from ui.widgets import StylizedButton, SerialNumberWindow
+from ui.widgets import StylizedButton
 from test_logic.event_system import event_system
 
 class ControlFrame(StylizedFrame):
@@ -43,8 +43,7 @@ class ControlFrame(StylizedFrame):
         self.reset_button.grid(row=3, column=0, pady=(20, 10), padx=10)
 
     def start_test(self):
-        serial_number = self.get_serial_number()
-        self.test_runner.run_tests(serial_number)
+        self.test_runner.run_tests()
 
     def stop_test(self):
         self.test_runner.stop_tests()
@@ -58,7 +57,3 @@ class ControlFrame(StylizedFrame):
         self.test_runner.serial_number = None
         # Optionally, reset hardware state
         self.test_runner.ni_usb_6525.set_all_relays_off()
-
-    def get_serial_number(self):
-        self.serial_number_window = SerialNumberWindow(self, self.hardware_client)
-        self.serial_number_window.grab_set()  # Optional: Make the window modal

@@ -100,7 +100,7 @@ class RotatingLogo(ctk.CTkFrame):
         self.after(0, self.update_animation)
 
         # Register event listeners
-        event_system.register_listener("test_started", self.go_to_random_position)
+        event_system.register_listener("sub_test_started", self.go_to_random_position)
         event_system.register_listener("test_terminated", self.return_to_default_position)
 
     def destroy(self):

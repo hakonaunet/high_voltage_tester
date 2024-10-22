@@ -1,56 +1,66 @@
 import customtkinter as ctk
-import threading
-import sys
+import os
 
-# Modify the import path based on your project structure
-from hardware.hardware_client import HardwareClient
+from test_logic.event_system import event_system
 
 class SerialNumberWindow(ctk.CTkToplevel):
-    def __init__(self, parent, hardware_client):
+    def __init__(self, parent):
         super().__init__(parent)
-        self.title("Scan Serial Number")
+        # Set the custom icon
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        icon_path = os.path.abspath(os.path.join(script_dir, "..", "images", "icons", "eltorqueicon_develop.ico"))
+        
+        self.iconbitmap(icon_path)
+        self.title("Enter Serial Number")
         self.geometry("400x200")
         self.resizable(False, False)
 
-        self.hardware_client = hardware_client  # Use the passed hardware_client
+
+        self.serial_number = None  # Initialize serial_number attribute
+
+        self.grid_columnconfigure(0, weight=1)
+        self.grid_rowconfigure((0,1,2,3,4), weight=1)
 
         # Instruction label
-        self.label = ctk.CTkLabel(self, text="Please scan the QR code using the scanner.")
-        self.label.pack(pady=20)
+        self.label = ctk.CTkLabel(self, text="Please scan the serial number:")
+        self.label.grid(row=0, column=0, pady=10)
 
-        # Serial number display
+        # Serial number entry
         self.serial_number_var = ctk.StringVar()
         self.serial_number_entry = ctk.CTkEntry(
             self, 
             textvariable=self.serial_number_var, 
-            state="readonly", 
             width=300
         )
-        self.serial_number_entry.pack(pady=10)
+        self.serial_number_entry.grid(row=1, column=0, pady=10)
+        
+        # Ensure the entry widget is focused and ready to receive input
+        self.after(100, lambda: self.serial_number_entry.focus_force())
 
-        # Scan button
-        self.scan_button = ctk.CTkButton(self, text="Scan", command=self.start_scan)
-        self.scan_button.pack(pady=10)
+        # Error message label
+        self.error_label = ctk.CTkLabel(self, text="", text_color="red")
+        self.error_label.grid(row=2, column=0, pady=5)
+
+        # Submit button
+        self.submit_button = ctk.CTkButton(self, text="Submit", command=self.submit_serial_number)
+        self.submit_button.grid(row=3, column=0, pady=10)
 
         # Close button
         self.close_button = ctk.CTkButton(self, text="Close", command=self.destroy)
-        self.close_button.pack(pady=10)
+        self.close_button.grid(row=4, column=0, pady=10)
 
-    def start_scan(self):
-        self.scan_button.configure(state="disabled")
-        threading.Thread(target=self.scan_serial_number, daemon=True).start()
+        # Bind Enter key to submit_serial_number
+        self.serial_number_entry.bind('<Return>', lambda event: self.submit_serial_number())
 
-    def scan_serial_number(self):
-        response = self.hardware_client.get_serial_number()
-        if response.get('status') == 'success':
-            serial_number = response.get('serial_number')
-            self.serial_number_var.set(serial_number)
+    def submit_serial_number(self):
+        serial_number = self.serial_number_var.get()
+        if self.is_valid_serial_number(serial_number):
+            self.serial_number = serial_number
+            self.destroy()
         else:
-            self.serial_number_var.set("Scan failed. Please try again.")
-        self.scan_button.configure(state="normal")
+            event_system.dispatch_event("log_event", {"message": "Invalid serial number entered.", "level": "ERROR"})
+            self.error_label.configure(text="Invalid serial number. Please try again.")
 
-if __name__ == "__main__":
-    app = ctk.CTk()
-    hardware_client = HardwareClient()
-    window = SerialNumberWindow(app, hardware_client)
-    window.mainloop()
+    def is_valid_serial_number(self, serial_number):
+        # Placeholder for validation logic
+        return bool(serial_number)
