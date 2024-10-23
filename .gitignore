@@ -100,3 +100,6 @@ Desktop.ini
 
 # Add any new files or directories to ignore
 utils/test_runner.pyc
+
+# Ignore all files within the logs directory
+log_files/*

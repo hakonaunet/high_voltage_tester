@@ -14,10 +14,10 @@ class HardwareClient:
         self.backup_relay = RelayController()
         self.relay_timers = {}  # For managing relay timers
 
-        event_system.register_listener("verify_raspberry_pi_connection", self.check_connection)
-        event_system.register_listener("default_relay_selected", self.set_default_relay)
-        event_system.register_listener("set_hipot_voltage", self.set_hipot_voltage)
-        event_system.register_listener("set_relays", self.set_relays)
+        event_system.register_listener(EventType.VERIFY_RASPBERRY_PI_CONNECTION, self.check_connection)
+        event_system.register_listener(EventType.DEFAULT_RELAY_SELECTED, self.set_default_relay)
+        event_system.register_listener(EventType.SET_HIPOT_VOLTAGE, self.set_hipot_voltage)
+        event_system.register_listener(EventType.SET_RELAYS, self.set_relays)
     
     def close(self):
         """Closes the socket connection if it's open and cancels relay timers."""

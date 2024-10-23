@@ -7,14 +7,14 @@ from tkdial import Meter
 
 from utils import get_theme_background, MAIN_COLOR, Colors, TestConstants
 from ui.widgets.bordered_label import BorderedLabel
-from utils import event_system
-
+from utils.event_system import event_system, EventType
 
 class MeterWidget(ctk.CTkFrame):
     """
     A custom widget that encapsulates the Meter and its label.
     Handles animations and color changes based on test progress.
     """
+   
     def __init__(self, parent, label_text, test_number, **kwargs):
         super().__init__(parent, **kwargs)
         
@@ -67,7 +67,9 @@ class MeterWidget(ctk.CTkFrame):
             if hasattr(self.meter, 'canvas'):
                 self.meter.canvas.configure(bg=parent_bg)
             else:
-                event_system.dispatch_event("error_occurred", {"error_message": "Unable to set Meter background. Check if 'canvas' attribute exists."})
+                # Updated dispatch:
+                # event_system.dispatch_event(EventType.ERROR_OCCURRED, {"error_message": "Unable to set Meter background. Check if 'canvas' attribute exists."})
+                event_system.dispatch_event(EventType.LOG_EVENT, {"message": "Unable to set Meter background. Check if 'canvas' attribute exists.", "level": "ERROR"})
         
         self.meter.set_mark(int(TestConstants.CURRENT_CUT_OFF.value*10), 60, "red")
         self.meter.set(0)
@@ -80,26 +82,6 @@ class MeterWidget(ctk.CTkFrame):
         self.meter.bind("<Button-1>", self.on_click)
         
         ctk.AppearanceModeTracker.add(self.update_theme)
-        
-        # Register event listeners
-        event_system.register_listener("progress_update", self.on_progress_update)
-        event_system.register_listener("error_occurred", self.on_error_occurred)
-
-        self.test_status = None
-
-    def on_progress_update(self, event_data):
-        """
-        Handles progress updates to start test animations.
-        """
-        position = event_data.get("position")
-        if position == self.test_number:
-            self.start_test()
-
-    def on_error_occurred(self, event_data):
-        """
-        Handles errors by setting the border to red.
-        """
-        self.end_test("ERROR")
 
     def start_test(self):
         """
@@ -125,6 +107,8 @@ class MeterWidget(ctk.CTkFrame):
             self.label.configure(border_color=MAIN_COLOR)
         elif result in ["FAILURE", "ERROR"]:
             self.label.configure(border_color=Colors.NEON_RED.value)
+        elif result == "RESET":
+            self.label.configure(border_color=Colors.GRAY.value)
 
     def blink_border(self, color1, color2):
         """
@@ -134,7 +118,7 @@ class MeterWidget(ctk.CTkFrame):
         next_color = color2 if current_color == color1 else color1
         self.label.configure(border_color=next_color)
         
-        if self.test_status in ["running", "error"]:
+        if self.test_status in ["running", "ERROR"]:
             self.blink_job = self.after(500, self.blink_border, color1, color2)
 
     def update_theme(self, new_theme):
@@ -218,23 +202,19 @@ class MeterWidget(ctk.CTkFrame):
         random_value = random.uniform(0, 6)
         self.go_to(random_value)
     
-
     def destroy(self):
         """Override destroy to unregister callbacks."""
         ctk.AppearanceModeTracker.remove(self.update_theme)
-        event_system.unregister_listener("progress_update", self.on_progress_update)
-        event_system.unregister_listener("error_occurred", self.on_error_occurred)
         if self.blink_job:
             self.after_cancel(self.blink_job)
         super().destroy()
-
 
 class MetersFrame(ctk.CTkFrame):
     """
     A frame that contains a 6x1 stack of MeterWidgets with labels.
     """
     def __init__(self, parent, **kwargs):
-        super().__init__(parent, fg_color=("#f0f0f0", "#1f1f1f"), **kwargs)  # Initialize first
+        super().__init__(parent, fg_color=("#f0f0f0", "#1f1f1f"), **kwargs)
         
         # Configure grid layout with 6 rows and 2 columns
         for row in range(6):
@@ -249,27 +229,32 @@ class MetersFrame(ctk.CTkFrame):
             meter_widget = MeterWidget(self, label_text, test_number=row + 1)
             meter_widget.grid(row=row, column=0, columnspan=2, padx=(10,10), pady=0, sticky="nsew")
             self.meter_widgets.append(meter_widget)
-    
-        event_system.register_listener("sub_test_concluded", self.on_sub_test_concluded)
-        event_system.register_listener("test_started", self.on_test_started)
-    def on_sub_test_concluded(self, event_data):
-        """
-        Handles sub-test conclusion to update the meter's status.
-        """
-        test_number = event_data.get("test_number")
-        status = event_data.get("status")
-        current = event_data.get("current")
-        self.meter_widgets[test_number - 1].end_test(status)
-        self.meter_widgets[test_number - 1].go_to(current)
 
+        event_system.register_listener(EventType.TEST_STARTED, self.on_test_started)
+        event_system.register_listener(EventType.SUB_TEST_STARTED, self.on_sub_test_started)
+        event_system.register_listener(EventType.SUB_TEST_CONCLUDED, self.on_sub_test_concluded)
     def on_test_started(self, event_data):
         """
         Handles test start to reset all meters and their border colors.
         """
         for meter_widget in self.meter_widgets:
             meter_widget.go_to_zero()
-            meter_widget.label.configure(border_color=Colors.GRAY.value)
-            meter_widget.test_status = None  # Reset the test status
+            meter_widget.end_test("RESET")
+
+    def on_sub_test_started(self, event_data):
+        """
+        Handles sub-test start to reset the specific meter.
+        """
+        test_number = event_data.get("test_number")
+        self.meter_widgets[test_number - 1].start_test()
+    
+    def on_sub_test_concluded(self, event_data):
+        """
+        Handles sub-test conclusion to end the specific meter.
+        """
+        test_number = event_data.get("test_number")
+        self.meter_widgets[test_number - 1].end_test(event_data.get("status"))
+        self.meter_widgets[test_number - 1].go_to(event_data.get("current"))
 
     def update_theme(self, new_theme):
         """
@@ -282,12 +267,10 @@ class MetersFrame(ctk.CTkFrame):
         """
         Override destroy to unregister the theme callback.
         """
-        ctk.AppearanceModeTracker.remove(self.update_theme)
-        event_system.unregister_listener("sub_test_concluded", self.on_sub_test_concluded)
+        event_system.unregister_listener(EventType.TEST_STARTED, self.on_test_started)
         for meter_widget in self.meter_widgets:
             meter_widget.destroy()
         super().destroy()
-
 
 if __name__ == "__main__":
     # Example usage of MetersFrame

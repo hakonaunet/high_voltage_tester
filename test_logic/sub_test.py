@@ -1,6 +1,8 @@
 import time
-from utils import event_system
+import random
+from utils.event_system import event_system, EventType
 from utils.constants import TestConstants, test_number_to_relays
+
 class SubTest:
     def __init__(self, test_number, voltage):
         self.test_number = test_number
@@ -10,49 +12,85 @@ class SubTest:
 
     def run(self):
         try:
-            event_system.dispatch_event("sub_test_started", {"test_name": f"Sub-test {self.test_number}", "voltage": self.voltage})
-            
-            event_system.dispatch_event("log_event", {"message": f"Setting hi-pot tester to {self.voltage}V", "level": "INFO"})
-            event_system.dispatch_event("set_hipot_voltage", {"voltage": self.voltage})
+            # Dispatch SUB_TEST_STARTED event
+            event_system.dispatch_event(EventType.SUB_TEST_STARTED, {
+                "test_number": self.test_number,
+                "voltage": self.voltage
+            })
+
+            # Log setting hi-pot voltage
+            event_system.dispatch_event(EventType.LOG_EVENT, {
+                "message": f"Setting hi-pot tester to {self.voltage}V",
+                "level": "INFO"
+            })
+            event_system.dispatch_event(EventType.SET_HIPOT_VOLTAGE, {"voltage": self.voltage})
 
             relays = test_number_to_relays[self.test_number]
-            event_system.dispatch_event("log_event", {"message": f"Setting relays {relays} to open before measurement", "level": "INFO"})
-            event_system.dispatch_event("set_relays", {"relays": relays, "timeout": 10, "state": True})
+            # Log setting relays to open before measurement
+            event_system.dispatch_event(EventType.LOG_EVENT, {
+                "message": f"Setting relays {relays} to open before measurement",
+                "level": "INFO"
+            })
+            event_system.dispatch_event(EventType.SET_RELAYS, {
+                "relays": relays,
+                "timeout": 10,
+                "state": True
+            })
 
+            # Simulate test runtime
             time.sleep(TestConstants.RUNTIME.value)
+            
             # Simulate reading current (replace with actual hardware interface)
             self.current = self._simulate_current_measurement()
             
-            event_system.dispatch_event("log_event", {"message": f"Measured current: {self.current:.2f} mA", "level": "INFO"})
-            
+            # Log measured current
+            event_system.dispatch_event(EventType.LOG_EVENT, {
+                "message": f"Measured current: {self.current:.2f} mA",
+                "level": "INFO"
+            })
+
             # Evaluate test result
             if 0 <= self.current <= TestConstants.CURRENT_CUT_OFF.value:
                 self.status = "SUCCESS"
-                event_system.dispatch_event("log_event", {"message": f"Sub-test {self.test_number} passed.", "level": "INFO"})
+                event_system.dispatch_event(EventType.LOG_EVENT, {
+                    "message": f"Sub-test {self.test_number} passed.",
+                    "level": "INFO"
+                })
             else:
                 self.status = "FAILURE"
-                event_system.dispatch_event("log_event", {"message": f"Sub-test {self.test_number} failed.", "level": "WARNING"})
+                event_system.dispatch_event(EventType.LOG_EVENT, {
+                    "message": f"Sub-test {self.test_number} failed.",
+                    "level": "WARNING"
+                })
 
-            event_system.dispatch_event("log_event", {"message": f"Setting relays {relays} to closed after measurement", "level": "INFO"})
-            event_system.dispatch_event("set_relays", {"relays": relays, "state": False})
-            
-            # Dispatch the new sub_test_concluded event
-            event_system.dispatch_event("sub_test_concluded", {
+            # Log setting relays to closed after measurement
+            event_system.dispatch_event(EventType.LOG_EVENT, {
+                "message": f"Setting relays {relays} to closed after measurement",
+                "level": "INFO"
+            })
+            event_system.dispatch_event(EventType.SET_RELAYS, {"relays": relays, "state": False})
+
+            # Dispatch SUB_TEST_CONCLUDED event
+            event_system.dispatch_event(EventType.SUB_TEST_CONCLUDED, {
                 "test_number": self.test_number,
                 "status": self.status,
                 "current": self.current
             })
-            
+
             return self.status
 
         except Exception as e:
             self.status = "ERROR"
             error_message = f"Error in sub-test {self.test_number}: {str(e)}"
-            event_system.dispatch_event("error_occurred", {"error_message": error_message})
-            event_system.dispatch_event("log_event", {"message": error_message, "level": "ERROR"})
             
-            # Dispatch the new sub_test_concluded event for error case
-            event_system.dispatch_event("sub_test_concluded", {
+            # Replace ERROR_OCCURRED with LOG_EVENT at ERROR level
+            event_system.dispatch_event(EventType.LOG_EVENT, {
+                "message": error_message,
+                "level": "ERROR"
+            })
+            
+            # Dispatch SUB_TEST_CONCLUDED event for error case
+            event_system.dispatch_event(EventType.SUB_TEST_CONCLUDED, {
                 "test_number": self.test_number,
                 "status": self.status,
                 "current": self.current  # This might be None in case of an error
@@ -62,7 +100,6 @@ class SubTest:
 
     def _simulate_current_measurement(self):
         # Replace this with actual hardware interface
-        import random
         return random.uniform(0.0, 6)
 
     def get_result(self):

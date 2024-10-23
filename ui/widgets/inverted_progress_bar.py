@@ -3,7 +3,7 @@ import time
 import random
 
 import customtkinter as ctk
-from utils import event_system
+from utils.event_system import event_system, EventType
 
 class InvertedCTkProgressBar(ctk.CTkProgressBar):
     def __init__(self, master=None, **kwargs):
@@ -19,7 +19,7 @@ class InvertedCTkProgressBar(ctk.CTkProgressBar):
         self.positions = [0, 0.036, 0.218, 0.402, 0.582, 0.762, 0.947, 1]
 
         # Add event listener
-        event_system.register_listener("progress_update", self.on_progress_update)
+        event_system.register_listener(EventType.PROGRESS_UPDATE, self.on_progress_update)
 
     def _draw(self, no_color_updates=False):
         # Call the parent class's _draw method to set up the canvas

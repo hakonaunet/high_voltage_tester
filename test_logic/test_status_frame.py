@@ -1,12 +1,11 @@
 import customtkinter as ctk
-
-from utils import MAIN_COLOR, TestConstants, event_system, EventType       
-from ui.widgets.bordered_label import BorderedLabel
-from ui.widgets.stylized_frame import StylizedFrame
+from utils.event_system import event_system, EventType
 from ui.widgets.stylized_label import StylizedLabel
+from ui.widgets.bordered_label import BorderedLabel
+from utils.constants import TestConstants
 from ui.widgets.headings import Heading2
 
-class TestStatusFrame(StylizedFrame):
+class TestStatusFrame(ctk.CTkFrame):
     def __init__(self, parent):
         super().__init__(parent)
         
@@ -48,7 +47,7 @@ class TestStatusFrame(StylizedFrame):
             text=""
         )
         self.voltage_button.grid(row=1, column=3, sticky="e", padx=(5, 20), pady=(10, 0))
-
+        
         # Add Highest measured current label and button
         self.highest_current_label = StylizedLabel(
             self,
@@ -61,7 +60,7 @@ class TestStatusFrame(StylizedFrame):
             text=""
         )
         self.highest_current_button.grid(row=2, column=1, sticky="e", padx=5, pady=(10, 0))
-
+        
         # Add Maximum current threshold label and button
         self.max_current_label = StylizedLabel(
             self,
@@ -71,10 +70,11 @@ class TestStatusFrame(StylizedFrame):
         
         self.max_current_button = BorderedLabel(
             self,
-            text=""
+            text=f"{TestConstants.CURRENT_CUT_OFF.value}mA"
         )
         self.max_current_button.grid(row=2, column=3, sticky="e", padx=(5, 20), pady=(10, 0))
         
+        # Register event listeners
         event_system.register_listener(EventType.TEST_STARTED, self.on_test_started)
         event_system.register_listener(EventType.SUB_TEST_STARTED, self.on_sub_test_started)
         event_system.register_listener(EventType.SUB_TEST_CONCLUDED, self.on_sub_test_concluded)

@@ -4,7 +4,7 @@ from ui.widgets import StylizedFrame, StylizedLabel, StylizedEntry, StylizedButt
 from ui.widgets.headings import Heading2
 from dataclasses import dataclass
 from test_logic import BatchInformation
-from utils import event_system
+from utils import event_system, EventType, Colors, darken_hex_color
 
 class LeftFrame(StylizedFrame):
     def __init__(self, parent):
@@ -83,6 +83,7 @@ class LeftFrame(StylizedFrame):
         )
         self.reenter_button.grid(row=0, column=1, pady=(0, 10), padx=(5, 0), sticky="ew")
         
+        self.update_button_states(confirmed=False)
         # Set initial button states
         self.confirm_button.configure(state='normal')
         self.reenter_button.configure(state='disabled')
@@ -91,11 +92,10 @@ class LeftFrame(StylizedFrame):
         state_confirmed = 'disabled' if confirmed else 'normal'
         state_reenter = 'normal' if confirmed else 'disabled'
 
-        self.confirm_button.configure(state=state_confirmed)
-        self.work_order_entry.configure(state=state_confirmed)
+        self.confirm_button.configure(state=state_confirmed, fg_color = darken_hex_color(Colors.GREEN_DEVELOP.value, factor=0.85) if confirmed else Colors.GREEN_DEVELOP.value)
         self.lot_hardener_entry.configure(state=state_confirmed)
         self.lot_molding_compound_entry.configure(state=state_confirmed)
-        self.reenter_button.configure(state=state_reenter)
+        self.reenter_button.configure(state=state_reenter, fg_color = Colors.GREEN_DEVELOP.value if confirmed else darken_hex_color(Colors.GREEN_DEVELOP.value, factor=0.85))
 
     def on_confirm(self):
         # Read entries
@@ -105,8 +105,7 @@ class LeftFrame(StylizedFrame):
         
         # Validate entries (ensure they are not empty)
         if not all([work_order_number, lot_hardener_number, lot_molding_compound_number]):
-            # Dispatch an error event or show a message to the user
-            event_system.dispatch_event('error_occurred', {'error_message': 'All fields must be filled out.'})
+            event_system.dispatch_event(EventType.LOG_EVENT, {'message': 'All fields must be filled out.', 'level': 'ERROR'})
             return
         
         # Store in BatchInformation
@@ -120,7 +119,7 @@ class LeftFrame(StylizedFrame):
         self.update_button_states(confirmed=True)
         
         # Dispatch an event to indicate that batch information is confirmed
-        event_system.dispatch_event('batch_info_confirmed', {'batch_info': self.batch_info})
+        event_system.dispatch_event(EventType.BATCH_INFO_CONFIRMED, {'batch_info': self.batch_info})
 
     def on_reenter(self):
         # Clear entries
@@ -135,4 +134,4 @@ class LeftFrame(StylizedFrame):
         self.update_button_states(confirmed=False)
         
         # Dispatch an event to indicate that batch information is cleared
-        event_system.dispatch_event('batch_info_cleared')
+        event_system.dispatch_event(EventType.BATCH_INFO_CLEARED)

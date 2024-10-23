@@ -1,5 +1,5 @@
 import customtkinter as ctk
-from utils.event_system import event_system, EventType  # Updated import path and added EventType
+from utils.event_system import event_system, EventType
 from utils import MAIN_COLOR
 import time
 
@@ -49,9 +49,9 @@ class DebuggerPanel(ctk.CTkFrame):
         self.logs = []
         self.max_logs = max_logs
         self.show_debug = False  # Initialize the show_debug flag
-
+    
         # Register event listeners using EventType Enum
-        event_system.register_listener(EventType.LOG_EVENT, self.handle_log_event)  # {{ edit_1 }}
+        event_system.register_listener(EventType.LOG_EVENT, self.handle_log_event)
 
     def clear_log(self):
         """Clears the debugger log."""
@@ -63,8 +63,8 @@ class DebuggerPanel(ctk.CTkFrame):
 
     def log(self, message, level="INFO"):
         """Add a log message to the debugger panel."""
-        if level == "DEBUG" and not self.show_debug:  # {{ edit_2 }}
-            return
+        if level == "DEBUG" and not self.show_debug:
+            return  # Ignore DEBUG messages if show_debug is False
         timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
         log_entry = f"[{timestamp}] [{level}] {message}\n"
         
@@ -81,12 +81,15 @@ class DebuggerPanel(ctk.CTkFrame):
         self.textbox.see("end")  # Scroll to the bottom
         self.textbox.configure(state="disabled")
 
-    def handle_log_event(self, data):  # {{ edit_3 }}
+    def handle_log_event(self, data):
         message = data.get('message', 'No message provided.')
         level = data.get('level', 'INFO')
         self.log(message, level)
 
+    # Removed handle_debug_event method
+
     def destroy(self):
         """Override destroy to unregister event listeners and theme callback."""
-        event_system.unregister_listener(EventType.LOG_EVENT, self.handle_log_event)  # {{ edit_4 }}
+        event_system.unregister_listener(EventType.LOG_EVENT, self.handle_log_event)
+        # Removed unregistration for EventType.DEBUG_EVENT
         super().destroy()
