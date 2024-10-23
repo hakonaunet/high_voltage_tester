@@ -103,3 +103,6 @@ utils/test_runner.pyc
 
 # Ignore all files within the logs directory
 log_files/*
+
+# Ignore all files within the tests directory
+tests/*
