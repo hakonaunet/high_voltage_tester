@@ -1,5 +1,6 @@
 import customtkinter as ctk
 from utils import MAIN_COLOR
+from utils.event_system import event_system, EventType  # {{ edit_1 }}
 
 class Heading1(ctk.CTkLabel):
     def __init__(self, parent, text, **kwargs):

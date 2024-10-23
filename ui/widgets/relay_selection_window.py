@@ -47,7 +47,7 @@ class RelaySelectionWindow(ctk.CTkToplevel):
             command=self.on_select_electromechanical,
             width=300,
         )
-        self.button_electromechanical.grid(row=2, column=0, padx=(20, 10), pady=0, sticky="nsew")
+        self.button_electromechanical.grid(row=2, column=0, padx=(20, 5), pady=0, sticky="nsew")
 
         # Solid State Relay Button
         self.button_solid_state = stylized_button.StylizedButton(
@@ -59,7 +59,7 @@ class RelaySelectionWindow(ctk.CTkToplevel):
             hover_color=darken_hex_color(Colors.NEON_RED.value),
             width=300,
         )
-        self.button_solid_state.grid(row=2, column=1, padx=(10, 20), pady=0, sticky="nsew")
+        self.button_solid_state.grid(row=2, column=1, padx=(5, 20), pady=0, sticky="nsew")
 
         # Cancel Button
         self.button_cancel = stylized_button.StylizedButton(

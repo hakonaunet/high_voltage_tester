@@ -1,13 +1,13 @@
 import colorsys
 
-def darken_hex_color(hex_color: str, factor: float = 0.85) -> str:
+def darken_hex_color(hex_color: str, factor: float = 0.90) -> str:
     """
     Darken a hex color by a given factor.
 
     Args:
         hex_color (str): The hex color to darken (e.g., "#RRGGBB").
         factor (float): The factor by which to darken the color (0 to 1).
-                        Default is 0.85.
+                        Default is 0.90.
 
     Returns:
         str: The darkened hex color.

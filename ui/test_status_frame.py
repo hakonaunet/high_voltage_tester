@@ -1,11 +1,10 @@
 import customtkinter as ctk
 
-from utils import MAIN_COLOR, TestConstants
+from utils import MAIN_COLOR, TestConstants, event_system       
 from ui.widgets.bordered_label import BorderedLabel
 from ui.widgets.stylized_frame import StylizedFrame
 from ui.widgets.stylized_label import StylizedLabel
 from ui.widgets.headings import Heading2
-from test_logic.event_system import event_system
 
 class TestStatusFrame(StylizedFrame):
     def __init__(self, parent):
@@ -40,7 +39,7 @@ class TestStatusFrame(StylizedFrame):
         # Add Current voltage label and button
         self.voltage_label = StylizedLabel(
             self,
-            text="Provided voltage:"
+            text="Applied voltage:"
         )
         self.voltage_label.grid(row=1, column=2, sticky="w", padx=(5, 5), pady=(10, 0))
         

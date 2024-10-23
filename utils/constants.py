@@ -27,3 +27,12 @@ class TestConstants(Enum):
     RUNTIME = 1.5
     PAUSE_TIME = 1
     TIMEOUT = 10
+
+test_number_to_relays = {
+    1: (2, 3),
+    2: (2, 6),
+    3: (0, 6),
+    4: (0, 7),
+    5: (1, 3),
+    6: (0, 3)
+}

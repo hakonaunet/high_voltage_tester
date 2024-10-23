@@ -4,11 +4,10 @@ import customtkinter as ctk
 from CTkMessagebox import CTkMessagebox
 
 from test_logic.test_runner import TestRunner
-from test_logic import event_system
 from ui.widgets import MetersFrame, RotatingLogo, DebuggerPanel
 from ui.middle_frame import MiddleFrame
 from ui.progress_frame import ProgressFrame
-from utils import get_theme_background
+from utils import get_theme_background, event_system
 
 class MainFrame(ctk.CTkFrame):
     def __init__(self, parent, test_runner, hardware_client):

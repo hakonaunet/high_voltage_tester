@@ -3,7 +3,7 @@ import time
 import random
 
 import customtkinter as ctk
-from test_logic import event_system
+from utils import event_system
 
 class InvertedCTkProgressBar(ctk.CTkProgressBar):
     def __init__(self, master=None, **kwargs):

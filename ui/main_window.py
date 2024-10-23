@@ -4,11 +4,9 @@ import os
 
 import customtkinter as ctk
 
-from ui.widgets import MenuBar  # Import the MenuBar class
-from ui.main_frame import MainFrame  # Import the MainFrame class
-from utils import MAIN_COLOR  # Import the MAIN_COLOR constant
-from test_logic.event_system import event_system
-# Get the current directory
+from ui.widgets import MenuBar
+from ui.main_frame import MainFrame 
+#Get the current directory
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
 # Construct the path to the theme file

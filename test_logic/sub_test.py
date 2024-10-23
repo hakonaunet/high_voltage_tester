@@ -1,6 +1,6 @@
 import time
-from test_logic import event_system
-from utils.constants import TestConstants
+from utils import event_system
+from utils.constants import TestConstants, test_number_to_relays
 class SubTest:
     def __init__(self, test_number, voltage):
         self.test_number = test_number
@@ -11,8 +11,15 @@ class SubTest:
     def run(self):
         try:
             event_system.dispatch_event("sub_test_started", {"test_name": f"Sub-test {self.test_number}", "voltage": self.voltage})
-            event_system.dispatch_event("log_event", {"message": f"Setting hi-pot tester to {self.voltage}V", "level": "INFO"})
             
+            event_system.dispatch_event("log_event", {"message": f"Setting hi-pot tester to {self.voltage}V", "level": "INFO"})
+            event_system.dispatch_event("set_hipot_voltage", {"voltage": self.voltage})
+
+            relays = test_number_to_relays[self.test_number]
+            event_system.dispatch_event("log_event", {"message": f"Setting relays {relays} to open before measurement", "level": "INFO"})
+            event_system.dispatch_event("set_relays", {"relays": relays, "timeout": 10, "state": True})
+
+            time.sleep(TestConstants.RUNTIME.value)
             # Simulate reading current (replace with actual hardware interface)
             self.current = self._simulate_current_measurement()
             
@@ -25,6 +32,9 @@ class SubTest:
             else:
                 self.status = "FAILURE"
                 event_system.dispatch_event("log_event", {"message": f"Sub-test {self.test_number} failed.", "level": "WARNING"})
+
+            event_system.dispatch_event("log_event", {"message": f"Setting relays {relays} to closed after measurement", "level": "INFO"})
+            event_system.dispatch_event("set_relays", {"relays": relays, "state": False})
             
             # Dispatch the new sub_test_concluded event
             event_system.dispatch_event("sub_test_concluded", {
@@ -53,7 +63,6 @@ class SubTest:
     def _simulate_current_measurement(self):
         # Replace this with actual hardware interface
         import random
-        time.sleep(2)
         return random.uniform(0.0, 6)
 
     def get_result(self):

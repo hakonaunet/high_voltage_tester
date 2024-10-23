@@ -1,5 +1,5 @@
 import customtkinter as ctk
-from test_logic import event_system
+from utils.event_system import event_system, EventType  # Updated import path and added EventType
 from utils import MAIN_COLOR
 import time
 
@@ -48,11 +48,10 @@ class DebuggerPanel(ctk.CTkFrame):
         # Initialize log storage
         self.logs = []
         self.max_logs = max_logs
+        self.show_debug = False  # Initialize the show_debug flag
 
-        # Register event listeners
-        event_system.register_listener("log_event", self.handle_log_event)
-        event_system.register_listener("sub_test_started", self.handle_sub_test_started)
-        event_system.register_listener("error_occurred", self.handle_error_occurred)
+        # Register event listeners using EventType Enum
+        event_system.register_listener(EventType.LOG_EVENT, self.handle_log_event)  # {{ edit_1 }}
 
     def clear_log(self):
         """Clears the debugger log."""
@@ -64,6 +63,8 @@ class DebuggerPanel(ctk.CTkFrame):
 
     def log(self, message, level="INFO"):
         """Add a log message to the debugger panel."""
+        if level == "DEBUG" and not self.show_debug:  # {{ edit_2 }}
+            return
         timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
         log_entry = f"[{timestamp}] [{level}] {message}\n"
         
@@ -80,31 +81,12 @@ class DebuggerPanel(ctk.CTkFrame):
         self.textbox.see("end")  # Scroll to the bottom
         self.textbox.configure(state="disabled")
 
-    def handle_log_event(self, data):
+    def handle_log_event(self, data):  # {{ edit_3 }}
         message = data.get('message', 'No message provided.')
         level = data.get('level', 'INFO')
         self.log(message, level)
 
-    def handle_sub_test_started(self, data):
-        test_name = data.get('test_name', 'Unnamed Test')
-        self.log(f"{test_name} started", "INFO")
-
-    def handle_error_occurred(self, data):
-        error_message = data.get('error_message', 'An error occurred.')
-        self.log(error_message, "ERROR")
-
-    def update_theme(self, new_theme):
-        """Update the theme of the debugger panel."""
-        if new_theme == "dark":
-            self.configure(fg_color="gray17")
-            self.textbox.configure(fg_color="gray17")
-        else:
-            self.configure(fg_color="gray88")
-            self.textbox.configure(fg_color="gray88")
-
     def destroy(self):
-        """Override destroy to unregister event listeners."""
-        event_system.unregister_listener("log_event", self.handle_log_event)
-        event_system.unregister_listener("sub_test_started", self.handle_sub_test_started)
-        event_system.unregister_listener("error_occurred", self.handle_error_occurred)
+        """Override destroy to unregister event listeners and theme callback."""
+        event_system.unregister_listener(EventType.LOG_EVENT, self.handle_log_event)  # {{ edit_4 }}
         super().destroy()

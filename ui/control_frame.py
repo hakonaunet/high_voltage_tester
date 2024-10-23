@@ -1,7 +1,7 @@
 from ui.widgets.stylized_frame import StylizedFrame
 from ui.widgets.headings import Heading2
 from ui.widgets import StylizedButton
-from test_logic.event_system import event_system
+from utils import event_system
 
 class ControlFrame(StylizedFrame):
     def __init__(self, parent, test_runner, hardware_client):

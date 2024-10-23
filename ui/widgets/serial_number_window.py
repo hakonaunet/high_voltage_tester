@@ -1,7 +1,7 @@
 import customtkinter as ctk
 import os
 
-from test_logic.event_system import event_system
+from utils import event_system
 
 class SerialNumberWindow(ctk.CTkToplevel):
     def __init__(self, parent):
@@ -35,7 +35,7 @@ class SerialNumberWindow(ctk.CTkToplevel):
         self.serial_number_entry.grid(row=1, column=0, pady=10)
         
         # Ensure the entry widget is focused and ready to receive input
-        self.after(100, lambda: self.serial_number_entry.focus_force())
+        self.after(200, lambda: self.serial_number_entry.focus_force())
 
         # Error message label
         self.error_label = ctk.CTkLabel(self, text="", text_color="red")

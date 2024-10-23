@@ -4,13 +4,11 @@ import time
 import json
 import socket
 
-from test_logic import event_system
+from utils.event_system import event_system, EventType  # {{ edit_1 }}
 from test_logic.sub_test import SubTest
-
-# Import the new HardwareClient
 from hardware.hardware_client import HardwareClient
-
 from ui.widgets.serial_number_window import SerialNumberWindow 
+from utils.constants import TestConstants
 
 class TestRunner:
     def __init__(self, hardware_client: HardwareClient):
@@ -32,21 +30,21 @@ class TestRunner:
         self.batch_info = None
 
     def run_tests(self):
-        event_system.dispatch_event("test_started")
+        event_system.dispatch_event(EventType.LOG_EVENT, {"message": "Test started.", "level": "INFO"})  # {{ edit_2 }}
         if self.is_running:
-            event_system.dispatch_event("error_occurred", {"error_message": "Test already running."})
+            event_system.dispatch_event(EventType.LOG_EVENT, {"message": "Test already running.", "level": "ERROR"})  # {{ edit_3 }}
             return
         if not self.batch_info:
-            event_system.dispatch_event("error_occurred", {"error_message": "Batch information not set."})
+            event_system.dispatch_event(EventType.LOG_EVENT, {"message": "Batch information not set.", "level": "ERROR"})  # {{ edit_4 }}
             return
         
-        event_system.dispatch_event("progress_update", {"position": 0})
+        event_system.dispatch_event(EventType.LOG_EVENT, {"message": "Progress update: Position 0.", "level": "INFO"})  # {{ edit_5 }}
         serial_number = self.get_serial_number()
         if serial_number:
-            event_system.dispatch_event("log_event", {"message": f"Submitted serial number: {serial_number}.", "level": "INFO"})
-            event_system.dispatch_event("serial_number_confirmed", {"serial_number": serial_number})
+            event_system.dispatch_event(EventType.LOG_EVENT, {"message": f"Submitted serial number: {serial_number}.", "level": "INFO"})  # {{ edit_6 }}
+            event_system.dispatch_event(EventType.LOG_EVENT, {"message": f"Serial number confirmed: {serial_number}.", "level": "INFO"})  # {{ edit_7 }}
         else:
-            event_system.dispatch_event("error_occurred", {"error_message": "Serial number not provided."})
+            event_system.dispatch_event(EventType.LOG_EVENT, {"message": "Serial number not provided.", "level": "ERROR"})  # {{ edit_8 }}
             return
         
         self.serial_number = serial_number
@@ -65,19 +63,19 @@ class TestRunner:
         try:
             # Check connection with hardware client
             if not self.hardware_client.check_connection():
-                event_system.dispatch_event("log_event", {
+                event_system.dispatch_event(EventType.LOG_EVENT, {
                     "message": "Hardware connection check failed. Test execution aborted.",
                     "level": "ERROR"
-                })
-                event_system.dispatch_event("test_terminated", {})
+                })  # {{ edit_9 }}
+                event_system.dispatch_event(EventType.LOG_EVENT, {"message": "Test terminated.", "level": "INFO"})  # {{ edit_10 }}
                 return
 
-            event_system.dispatch_event("log_event", {
+            event_system.dispatch_event(EventType.LOG_EVENT, {
                 "message": "Hardware connection confirmed. Starting test execution.",
                 "level": "INFO"
-            })
+            })  # {{ edit_11 }}
 
-            event_system.dispatch_event("progress_update", {"position": 1})
+            event_system.dispatch_event(EventType.LOG_EVENT, {"message": "Progress update: Position 1.", "level": "INFO"})  # {{ edit_12 }}
             self.current_position = 1
 
             sub_tests = [
@@ -90,34 +88,35 @@ class TestRunner:
                     break
                 if i > self.current_position:
                     self.current_position = i
-                    event_system.dispatch_event("progress_update", {"position": i})
+                    event_system.dispatch_event(EventType.LOG_EVENT, {"message": f"Progress update: Position {i}.", "level": "INFO"})  # {{ edit_13 }}
                 
                 status = sub_test.run()
                 self.results.append(sub_test.get_result())
-                
+                if (i != len(sub_tests)):
+                    time.sleep(TestConstants.PAUSE_TIME.value)
                 if status == "ERROR":
                     break
 
 
             if self.is_running:
                 self._upload_results()
-                event_system.dispatch_event("progress_update", {"position": 7})
+                event_system.dispatch_event(EventType.LOG_EVENT, {"message": "Progress update: Position 7.", "level": "INFO"})  # {{ edit_14 }}
 
-            event_system.dispatch_event("test_terminated")
+            event_system.dispatch_event(EventType.LOG_EVENT, {"message": "Test terminated.", "level": "INFO"})  # {{ edit_15 }}
         except Exception as e:
-            event_system.dispatch_event("error_occurred", {"error_message": str(e)})
+            event_system.dispatch_event(EventType.LOG_EVENT, {"message": str(e), "level": "ERROR"})  # {{ edit_16 }}
         finally:
             self.is_running = False
 
     def _upload_results(self):
-        event_system.dispatch_event("log_event", {"message": "Uploading results to the database.", "level": "INFO"})
+        event_system.dispatch_event(EventType.LOG_EVENT, {"message": "Uploading results to the database.", "level": "INFO"})  # {{ edit_17 }}
         # Perform upload
         # You can access self.results and self.batch_info here to upload the data
 
     def stop_tests(self):
         if self.is_running:
             self.is_running = False
-            event_system.dispatch_event("log_event", {"message": "Test execution stopped by user.", "level": "WARNING"})
+            event_system.dispatch_event(EventType.LOG_EVENT, {"message": "Test execution stopped by user.", "level": "WARNING"})  # {{ edit_18 }}
 
     def get_results(self):
         return self.results

@@ -7,8 +7,7 @@ import numpy as np
 import customtkinter as ctk
 from PIL import Image, ImageTk  # Ensure Pillow is installed
 
-from test_logic import event_system
-from utils import get_theme_background, MAIN_COLOR
+from utils import get_theme_background, MAIN_COLOR, event_system
 
 class RotatingLogo(ctk.CTkFrame):
     def __init__(self, master=None, size=200, padding_percentage=-0.02, display_text=False, text_above_logo=False):

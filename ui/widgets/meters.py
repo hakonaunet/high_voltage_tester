@@ -7,7 +7,7 @@ from tkdial import Meter
 
 from utils import get_theme_background, MAIN_COLOR, Colors, TestConstants
 from ui.widgets.bordered_label import BorderedLabel
-from test_logic import event_system  # Import the event system
+from utils import event_system
 
 
 class MeterWidget(ctk.CTkFrame):

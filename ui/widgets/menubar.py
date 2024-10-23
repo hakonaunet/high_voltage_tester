@@ -2,8 +2,9 @@
 
 import customtkinter as ctk
 from CTkMenuBar import CTkMenuBar, CustomDropdownMenu  # Ensure this module is accessible
-from test_logic import event_system
+from utils import event_system
 from .relay_selection_window import RelaySelectionWindow
+from utils.event_system import event_system, EventType  # {{ edit_1 }}
 
 class MenuBar:
     def __init__(self, master):
@@ -13,25 +14,9 @@ class MenuBar:
     
     def create_menu(self):
         # Create menu buttons
-        file_menu = self.menu.add_cascade("File")
-        edit_menu = self.menu.add_cascade("Edit")
         settings_menu = self.menu.add_cascade("Settings")
+        troubleshooting_menu = self.menu.add_cascade("Troubleshooting")
         about_menu = self.menu.add_cascade("About")
-
-        # Create dropdown for 'File' menu
-        dropdown_file = CustomDropdownMenu(widget=file_menu)
-        dropdown_file.add_option(option="Open", command=lambda: print("Open"))
-        dropdown_file.add_option(option="Save", command=lambda: print("Save"))
-        dropdown_file.add_separator()
-        sub_export = dropdown_file.add_submenu("Export As")
-        sub_export.add_option(option=".TXT", command=lambda: print("Export as TXT"))
-        sub_export.add_option(option=".PDF", command=lambda: print("Export as PDF"))
-
-        # Create dropdown for 'Edit' menu
-        dropdown_edit = CustomDropdownMenu(widget=edit_menu)
-        dropdown_edit.add_option(option="Cut", command=lambda: print("Cut"))
-        dropdown_edit.add_option(option="Copy", command=lambda: print("Copy"))
-        dropdown_edit.add_option(option="Paste", command=lambda: print("Paste"))
 
         # Create dropdown for 'Settings' menu
         dropdown_settings = CustomDropdownMenu(widget=settings_menu)
@@ -40,6 +25,12 @@ class MenuBar:
         sub_theme.add_option(option="Light", command=self.set_light_theme)
         sub_theme.add_option(option="Dark", command=self.set_dark_theme)
         dropdown_settings.add_option(option="Select default relay", command=self.on_select_default_relay)
+
+        # Create dropdown for 'Troubleshooting' menu
+        dropdown_troubleshooting = CustomDropdownMenu(widget=troubleshooting_menu)
+        dropdown_troubleshooting.add_option(option="Verify Raspberry Pi connection", command=self.verify_raspberry_pi_connection)
+        dropdown_troubleshooting.add_option(option="Test primary relays", command=self.test_primary_relays)
+        dropdown_troubleshooting.add_option(option="Test backup relays", command=self.test_backup_relays)
 
         # Create dropdown for 'About' menu
         dropdown_about = CustomDropdownMenu(widget=about_menu)
@@ -62,6 +53,15 @@ class MenuBar:
         selected_relay = relay_window.result
 
         event_system.dispatch_event("default_relay_selected", {"selected_relay": selected_relay})
+
+    def verify_raspberry_pi_connection(self):
+        event_system.dispatch_event("verify_raspberry_pi_connection")
+
+    def test_primary_relays(self):
+        pass
+
+    def test_backup_relays(self):
+        pass
 # Example usage
 if __name__ == "__main__":
     app = ctk.CTk()  # Initialize the main CTk window
@@ -72,3 +72,4 @@ if __name__ == "__main__":
     app.configure(menu=menu_bar.menu)  # Attach the menu to the main window
 
     app.mainloop()
+

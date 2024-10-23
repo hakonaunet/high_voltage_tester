@@ -4,7 +4,7 @@ from ui.widgets import StylizedFrame, StylizedLabel, StylizedEntry, StylizedButt
 from ui.widgets.headings import Heading2
 from dataclasses import dataclass
 from test_logic import BatchInformation
-from test_logic import event_system
+from utils import event_system
 
 class LeftFrame(StylizedFrame):
     def __init__(self, parent):
