@@ -5,7 +5,7 @@ import threading
 import customtkinter as ctk
 from tkdial import Meter
 
-from utils import get_theme_background, MAIN_COLOR, Colors, TestConstants
+from utils import get_theme_background, MAIN_COLOR, Colors, TestConstants, LogLevel
 from ui.widgets.bordered_label import BorderedLabel
 from utils.event_system import event_system, EventType
 
@@ -69,7 +69,7 @@ class MeterWidget(ctk.CTkFrame):
             else:
                 # Updated dispatch:
                 # event_system.dispatch_event(EventType.ERROR_OCCURRED, {"error_message": "Unable to set Meter background. Check if 'canvas' attribute exists."})
-                event_system.dispatch_event(EventType.LOG_EVENT, {"message": "Unable to set Meter background. Check if 'canvas' attribute exists.", "level": "ERROR"})
+                event_system.dispatch_event(EventType.LOG_EVENT, {"message": "Unable to set Meter background. Check if 'canvas' attribute exists.", "level": LogLevel.ERROR})
         
         self.meter.set_mark(int(TestConstants.CURRENT_CUT_OFF.value*10), 60, "red")
         self.meter.set(0)

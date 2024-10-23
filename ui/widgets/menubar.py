@@ -4,7 +4,9 @@ import customtkinter as ctk
 from CTkMenuBar import CTkMenuBar, CustomDropdownMenu  # Ensure this module is accessible
 from utils import event_system
 from .relay_selection_window import RelaySelectionWindow
-from utils.event_system import event_system, EventType  # {{ edit_1 }}
+from .debug_level_window import DebugLevelWindow
+from utils.event_system import event_system, EventType
+from ui.debugger_panel import DebuggerPanel
 
 class MenuBar:
     def __init__(self, master):
@@ -20,11 +22,11 @@ class MenuBar:
 
         # Create dropdown for 'Settings' menu
         dropdown_settings = CustomDropdownMenu(widget=settings_menu)
-        dropdown_settings.add_option(option="Preferences", command=lambda: print("Preferences"))
         sub_theme = dropdown_settings.add_submenu("Theme")
         sub_theme.add_option(option="Light", command=self.set_light_theme)
         sub_theme.add_option(option="Dark", command=self.set_dark_theme)
         dropdown_settings.add_option(option="Select default relay", command=self.on_select_default_relay)
+        dropdown_settings.add_option(option="Debug levels", command=self.on_select_debug_levels)
 
         # Create dropdown for 'Troubleshooting' menu
         dropdown_troubleshooting = CustomDropdownMenu(widget=troubleshooting_menu)
@@ -43,6 +45,13 @@ class MenuBar:
     def set_dark_theme(self):
         """Set the appearance mode to Dark and notify all widgets."""
         ctk.set_appearance_mode("Dark")
+    
+    def on_select_debug_levels(self):
+        from ui.debugger_panel import DebuggerPanel
+        debugger_panel = DebuggerPanel._instance
+        if debugger_panel:
+            debug_level_window = DebugLevelWindow(self.master, debugger_panel.active_debug_levels)
+            self.master.wait_window(debug_level_window)
 
     def on_select_default_relay(self):
         # Create and display the relay selection window
@@ -52,10 +61,10 @@ class MenuBar:
         # Get the user's selection
         selected_relay = relay_window.result
 
-        event_system.dispatch_event("default_relay_selected", {"selected_relay": selected_relay})
+        event_system.dispatch_event(EventType.DEFAULT_RELAY_SELECTED, {"selected_relay": selected_relay})
 
     def verify_raspberry_pi_connection(self):
-        event_system.dispatch_event("verify_raspberry_pi_connection")
+        event_system.dispatch_event(EventType.VERIFY_RASPBERRY_PI_CONNECTION)
 
     def test_primary_relays(self):
         pass
@@ -72,4 +81,3 @@ if __name__ == "__main__":
     app.configure(menu=menu_bar.menu)  # Attach the menu to the main window
 
     app.mainloop()
-

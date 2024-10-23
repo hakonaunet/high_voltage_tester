@@ -1,7 +1,7 @@
 import customtkinter as ctk
 import os
 
-from utils import event_system, EventType
+from utils import event_system, EventType, LogLevel
 
 class SerialNumberWindow(ctk.CTkToplevel):
     def __init__(self, parent):
@@ -59,7 +59,7 @@ class SerialNumberWindow(ctk.CTkToplevel):
             event_system.dispatch_event(EventType.SERIAL_NUMBER_CONFIRMED, {"serial_number": serial_number})
             self.destroy()
         else:
-            event_system.dispatch_event(EventType.LOG_EVENT, {"message": "Invalid serial number entered.", "level": "ERROR"})
+            event_system.dispatch_event(EventType.LOG_EVENT, {"message": "Invalid serial number entered.", "level": LogLevel.ERROR})
             self.error_label.configure(text="Invalid serial number. Please try again.")
 
     def is_valid_serial_number(self, serial_number):

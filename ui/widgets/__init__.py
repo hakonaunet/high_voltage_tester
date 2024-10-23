@@ -10,3 +10,4 @@ from .stylized_frame import StylizedFrame
 from .stylized_label import StylizedLabel
 from .serial_number_window import SerialNumberWindow
 from .relay_selection_window import RelaySelectionWindow
+from .debug_level_window import DebugLevelWindow

@@ -2,7 +2,7 @@ import socket
 import json
 import threading
 
-from utils.event_system import event_system, EventType  # {{ edit_1 }}
+from utils import event_system, EventType, LogLevel
 from .ni_usb_6525 import RelayController
 
 class HardwareClient:
@@ -29,9 +29,9 @@ class HardwareClient:
         if self.socket:
             try:
                 self.socket.close()
-                event_system.dispatch_event(EventType.LOG_EVENT, {"message": "Hardware client closed.", "level": "INFO"})  # {{ edit_2 }}
+                event_system.dispatch_event(EventType.LOG_EVENT, {"message": "Hardware client closed.", "level": LogLevel.INFO})
             except Exception as e:
-                event_system.dispatch_event(EventType.LOG_EVENT, {"message": f"Error closing HardwareClient socket: {e}", "level": "ERROR"})  # {{ edit_3 }}
+                event_system.dispatch_event(EventType.LOG_EVENT, {"message": f"Error closing HardwareClient socket: {e}", "level": LogLevel.ERROR})
             finally:
                 self.socket = None
 
@@ -45,28 +45,28 @@ class HardwareClient:
             response = json.loads(data.decode())
             return response
         except ConnectionError as e:
-            event_system.dispatch_event(EventType.LOG_EVENT, {"message": f"Connection error: {e}", "level": "ERROR"})  # {{ edit_4 }}
+            event_system.dispatch_event(EventType.LOG_EVENT, {"message": f"Connection error: {e}", "level": LogLevel.ERROR})
             return {'status': 'error', 'message': 'Connection failed'}
         except Exception as e:
-            event_system.dispatch_event(EventType.LOG_EVENT, {"message": f"Unexpected error: {e}", "level": "ERROR"})  # {{ edit_5 }}
+            event_system.dispatch_event(EventType.LOG_EVENT, {"message": f"Unexpected error: {e}", "level": LogLevel.ERROR})
             return {'status': 'error', 'message': 'Unexpected error occurred'}
 
     def check_connection(self, event_data=None):  # Add event_data parameter with default None
         command = {'command': 'check_connection'}
         response = self.send_command(command)
         if response['status'] == 'success' and response['message'] == 'Connection established':
-            event_system.dispatch_event(EventType.LOG_EVENT, {"message": "Connection to Raspberry Pi server verified.", "level": "INFO"})  # {{ edit_6 }}
+            event_system.dispatch_event(EventType.LOG_EVENT, {"message": "Connection to Raspberry Pi server verified.", "level": LogLevel.INFO})
             return True
         else:
-            event_system.dispatch_event(EventType.LOG_EVENT, {"message": "Connection to Raspberry Pi server failed.", "level": "ERROR"})  # {{ edit_7 }}
+            event_system.dispatch_event(EventType.LOG_EVENT, {"message": "Connection to Raspberry Pi server failed.", "level": LogLevel.ERROR})
             return False
 
     def initialize(self):
         if self.check_connection():
-            event_system.dispatch_event(EventType.LOG_EVENT, {"message": "Hardware client initialized.", "level": "INFO"})  # {{ edit_8 }}
+            event_system.dispatch_event(EventType.LOG_EVENT, {"message": "Hardware client initialized.", "level": LogLevel.INFO})
             return True
         else:
-            event_system.dispatch_event(EventType.LOG_EVENT, {"message": "Hardware client initialization failed.", "level": "ERROR"})  # {{ edit_9 }}
+            event_system.dispatch_event(EventType.LOG_EVENT, {"message": "Hardware client initialization failed.", "level": LogLevel.ERROR})
             return False
 
     def set_relays(self, event_data):
@@ -79,11 +79,11 @@ class HardwareClient:
         elif isinstance(relay_indices, (list, tuple)):
             if not all(isinstance(i, int) and 0 <= i <= 7 for i in relay_indices):
                 error_msg = "Relay indices must be integers between 0 and 7."
-                event_system.dispatch_event(EventType.LOG_EVENT, {"message": error_msg, "level": "ERROR"})  # {{ edit_10 }}
+                event_system.dispatch_event(EventType.LOG_EVENT, {"message": error_msg, "level": LogLevel.ERROR})
                 raise ValueError(error_msg)
         else:
             error_msg = "Parameter 'relay_indices' must be an integer or a tuple/list of integers."
-            event_system.dispatch_event(EventType.LOG_EVENT, {"message": error_msg, "level": "ERROR"})  # {{ edit_11 }}
+            event_system.dispatch_event(EventType.LOG_EVENT, {"message": error_msg, "level": LogLevel.ERROR})
             raise TypeError(error_msg)
 
         # Convert state to boolean
@@ -95,13 +95,13 @@ class HardwareClient:
                 state = False
             else:
                 error_msg = "State must be 'open', 'closed', True, or False."
-                event_system.dispatch_event(EventType.LOG_EVENT, {"message": error_msg, "level": "ERROR"})  # {{ edit_12 }}
+                event_system.dispatch_event(EventType.LOG_EVENT, {"message": error_msg, "level": LogLevel.ERROR})
                 raise ValueError(error_msg)
         elif isinstance(state, bool):
             pass  # state is already a boolean, no conversion needed
         else:
             error_msg = "State must be a boolean or a string ('open' or 'closed')."
-            event_system.dispatch_event(EventType.LOG_EVENT, {"message": error_msg, "level": "ERROR"})  # {{ edit_13 }}
+            event_system.dispatch_event(EventType.LOG_EVENT, {"message": error_msg, "level": LogLevel.ERROR})
             raise TypeError(error_msg)
 
         # Send command to the appropriate relay controller
@@ -137,7 +137,7 @@ class HardwareClient:
                         self.send_command(command)
                     # Remove timer from dictionary
                     del self.relay_timers[relay_index]
-                    event_system.dispatch_event(EventType.LOG_EVENT, {"message": f"Relay {relay_index} automatically turned off after timeout.", "level": "WARNING"})  # {{ edit_14 }}
+                    event_system.dispatch_event(EventType.LOG_EVENT, {"message": f"Relay {relay_index} automatically turned off after timeout.", "level": LogLevel.WARNING})
                 # Start new timer
                 t = threading.Timer(timeout, turn_off_relay)
                 t.start()
@@ -169,10 +169,12 @@ class HardwareClient:
         selected_relay = event_data.get("selected_relay")
         if selected_relay == "Electromechanical":
             self.use_backup_relay = False
-            event_system.dispatch_event(EventType.LOG_EVENT, {"message": f"Default relay set to {selected_relay.lower()}.", "level": "INFO"})  # {{ edit_15 }}
+            event_system.dispatch_event(EventType.LOG_EVENT, {"message": f"Default relay set to {selected_relay.lower()}.", "level": LogLevel.INFO})
         elif selected_relay == "Solid State":
             self.use_backup_relay = True
-            event_system.dispatch_event(EventType.LOG_EVENT, {"message": f"Default relay set to {selected_relay.lower()}.", "level": "INFO"})  # {{ edit_16 }}
+            event_system.dispatch_event(EventType.LOG_EVENT, {"message": f"Default relay set to {selected_relay.lower()}.", "level": LogLevel.INFO})
+        elif selected_relay is None:
+            event_system.dispatch_event(EventType.LOG_EVENT, {"message": "Default relay was not updated.", "level": LogLevel.INFO})
 
     def stop_tests(self):
         # ... existing code ...

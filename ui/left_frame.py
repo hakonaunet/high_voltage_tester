@@ -4,7 +4,7 @@ from ui.widgets import StylizedFrame, StylizedLabel, StylizedEntry, StylizedButt
 from ui.widgets.headings import Heading2
 from dataclasses import dataclass
 from test_logic import BatchInformation
-from utils import event_system, EventType, Colors, darken_hex_color
+from utils import event_system, EventType, Colors, darken_hex_color, LogLevel
 
 class LeftFrame(StylizedFrame):
     def __init__(self, parent):
@@ -105,7 +105,7 @@ class LeftFrame(StylizedFrame):
         
         # Validate entries (ensure they are not empty)
         if not all([work_order_number, lot_hardener_number, lot_molding_compound_number]):
-            event_system.dispatch_event(EventType.LOG_EVENT, {'message': 'All fields must be filled out.', 'level': 'ERROR'})
+            event_system.dispatch_event(EventType.LOG_EVENT, {'message': 'All fields must be filled out.', 'level': LogLevel.ERROR})
             return
         
         # Store in BatchInformation

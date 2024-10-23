@@ -1,7 +1,6 @@
 import time
 import random
-from utils.event_system import event_system, EventType
-from utils.constants import TestConstants, test_number_to_relays
+from utils import event_system, EventType, TestConstants, test_number_to_relays, LogLevel
 
 class SubTest:
     def __init__(self, test_number, voltage):
@@ -21,7 +20,7 @@ class SubTest:
             # Log setting hi-pot voltage
             event_system.dispatch_event(EventType.LOG_EVENT, {
                 "message": f"Setting hi-pot tester to {self.voltage}V",
-                "level": "INFO"
+                "level": LogLevel.INFO
             })
             event_system.dispatch_event(EventType.SET_HIPOT_VOLTAGE, {"voltage": self.voltage})
 
@@ -29,7 +28,7 @@ class SubTest:
             # Log setting relays to open before measurement
             event_system.dispatch_event(EventType.LOG_EVENT, {
                 "message": f"Setting relays {relays} to open before measurement",
-                "level": "INFO"
+                "level": LogLevel.INFO
             })
             event_system.dispatch_event(EventType.SET_RELAYS, {
                 "relays": relays,
@@ -46,7 +45,7 @@ class SubTest:
             # Log measured current
             event_system.dispatch_event(EventType.LOG_EVENT, {
                 "message": f"Measured current: {self.current:.2f} mA",
-                "level": "INFO"
+                "level": LogLevel.INFO
             })
 
             # Evaluate test result
@@ -54,19 +53,19 @@ class SubTest:
                 self.status = "SUCCESS"
                 event_system.dispatch_event(EventType.LOG_EVENT, {
                     "message": f"Sub-test {self.test_number} passed.",
-                    "level": "INFO"
+                    "level": LogLevel.INFO
                 })
             else:
                 self.status = "FAILURE"
                 event_system.dispatch_event(EventType.LOG_EVENT, {
                     "message": f"Sub-test {self.test_number} failed.",
-                    "level": "WARNING"
+                    "level": LogLevel.WARNING
                 })
 
             # Log setting relays to closed after measurement
             event_system.dispatch_event(EventType.LOG_EVENT, {
                 "message": f"Setting relays {relays} to closed after measurement",
-                "level": "INFO"
+                "level": LogLevel.INFO
             })
             event_system.dispatch_event(EventType.SET_RELAYS, {"relays": relays, "state": False})
 
@@ -86,7 +85,7 @@ class SubTest:
             # Replace ERROR_OCCURRED with LOG_EVENT at ERROR level
             event_system.dispatch_event(EventType.LOG_EVENT, {
                 "message": error_message,
-                "level": "ERROR"
+                "level": LogLevel.ERROR
             })
             
             # Dispatch SUB_TEST_CONCLUDED event for error case

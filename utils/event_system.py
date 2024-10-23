@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import Enum, auto
 import threading
 
 class EventType(Enum):
@@ -15,7 +15,21 @@ class EventType(Enum):
     PROGRESS_UPDATE = "progress_update"
     SERIAL_NUMBER_CONFIRMED = "serial_number_confirmed"
     TEST_TERMINATED = "test_terminated"
+    DEBUG_LEVELS_CHANGED = "debug_levels_changed"
     # Add any other necessary event types here
+
+class LogLevel(Enum):
+    DEBUG = auto()
+    INFO = auto()
+    WARNING = auto()
+    ERROR = auto()
+
+    @classmethod
+    def from_string(cls, level_str: str):
+        try:
+            return cls[level_str.upper()]
+        except KeyError:
+            raise ValueError(f"Invalid log level: {level_str}. Must be one of {[level.name for level in cls]}")
 
 class EventSystem:
     _instance = None
@@ -50,6 +64,14 @@ class EventSystem:
 
     def dispatch_event(self, event_type: EventType, data=None):
         self._validate_event_type(event_type)
+        
+        # Validate log level if this is a log event
+        if event_type == EventType.LOG_EVENT and data:
+            level = data.get('level')
+            if not isinstance(level, LogLevel):
+                raise TypeError(f"Log level must be an instance of LogLevel enum, not {type(level)}. "
+                              f"Use LogLevel.LEVEL_NAME instead of string values.")
+        
         with self._instance.lock:
             listeners = self._instance.listeners.get(event_type, []).copy()
         for callback in listeners:

@@ -1,7 +1,7 @@
 from ui.widgets.stylized_frame import StylizedFrame
 from ui.widgets.headings import Heading2
 from ui.widgets import StylizedButton
-from utils import event_system
+from utils import event_system, EventType, LogLevel
 
 class ControlFrame(StylizedFrame):
     def __init__(self, parent, test_runner, hardware_client):
@@ -50,7 +50,7 @@ class ControlFrame(StylizedFrame):
 
     def reset_test(self):
         # Implement reset functionality
-        event_system.dispatch_event("log_event", {"message": "Resetting tests.", "level": "INFO"})
+        event_system.dispatch_event(EventType.LOG_EVENT, {"message": "Resetting tests.", "level": LogLevel.INFO})
         self.test_runner.stop_tests()
         self.test_runner.results = []
         self.test_runner.is_running = False
