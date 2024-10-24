@@ -3,7 +3,19 @@ import time
 from utils.event_system import event_system, EventType
 
 class Logger:
+    _instance = None
+
+    def __new__(cls, *args, **kwargs):
+        if cls._instance is None:
+            cls._instance = super(Logger, cls).__new__(cls, *args, **kwargs)
+            cls._instance._initialized = False
+        return cls._instance
+
     def __init__(self):
+        if self._initialized:
+            return
+        self._initialized = True
+
         self.log_directory = os.path.join(os.getcwd(), "log_files")
         os.makedirs(self.log_directory, exist_ok=True)
         start_time = time.strftime("%Y%m%d_%H%M%S")

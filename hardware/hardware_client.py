@@ -6,7 +6,19 @@ from utils import event_system, EventType, LogLevel
 from .ni_usb_6525 import RelayController
 
 class HardwareClient:
+    _instance = None
+
+    def __new__(cls, *args, **kwargs):
+        if not cls._instance:
+            cls._instance = super(HardwareClient, cls).__new__(cls)
+            cls._instance._initialized = False
+        return cls._instance
+
     def __init__(self, host='192.168.0.2', port=65432):
+        if self._initialized:
+            return
+        self._initialized = True
+
         self.host = host
         self.port = port
         self.socket = None
@@ -74,6 +86,7 @@ class HardwareClient:
         relay_indices = event_data.get("relays")
         timeout = event_data.get("timeout", 10)
         state = event_data.get("state")
+        
         # Ensure relay_indices is a tuple of integers
         if isinstance(relay_indices, int):
             relay_indices = (relay_indices,)
@@ -105,6 +118,13 @@ class HardwareClient:
             event_system.dispatch_event(EventType.LOG_EVENT, {"message": error_msg, "level": LogLevel.ERROR})
             raise TypeError(error_msg)
 
+        # DEBUG Log: Relays being set and their target state
+        relay_state_str = "open" if state else "closed"
+        event_system.dispatch_event(EventType.LOG_EVENT, {
+            "message": f"Setting relay(s) {relay_indices} to {relay_state_str}.",
+            "level": LogLevel.DEBUG
+        })
+
         # Send command to the appropriate relay controller
         if self.use_backup_relay:
             # Use backup relay
@@ -124,6 +144,13 @@ class HardwareClient:
                 # Cancel existing timer if any
                 if relay_index in self.relay_timers:
                     self.relay_timers[relay_index].cancel()
+
+                # DEBUG Log: Starting timer for relay
+                event_system.dispatch_event(EventType.LOG_EVENT, {
+                    "message": f"Starting timer for relay {relay_index} with timeout {timeout} seconds.",
+                    "level": LogLevel.DEBUG
+                })
+
                 # Define function to turn off relay after timeout
                 def turn_off_relay(relay_index=relay_index):
                     # Turn off the relay
@@ -139,6 +166,7 @@ class HardwareClient:
                     # Remove timer from dictionary
                     del self.relay_timers[relay_index]
                     event_system.dispatch_event(EventType.LOG_EVENT, {"message": f"Relay {relay_index} automatically turned off after timeout.", "level": LogLevel.WARNING})
+
                 # Start new timer
                 t = threading.Timer(timeout, turn_off_relay)
                 t.start()
