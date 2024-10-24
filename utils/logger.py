@@ -7,7 +7,7 @@ class Logger:
         self.log_directory = os.path.join(os.getcwd(), "log_files")
         os.makedirs(self.log_directory, exist_ok=True)
         start_time = time.strftime("%Y%m%d_%H%M%S")
-        self.log_file_path = os.path.join(self.log_directory, f"log_{start_time}.txt")
+        self.log_file_path = os.path.join(self.log_directory, f"HV_tester_log_{start_time}.txt")
         self._initialize_log_file()
         
         # Register the log_event listener

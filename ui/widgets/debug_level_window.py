@@ -35,7 +35,7 @@ class DebugLevelWindow(ctk.CTkToplevel):
                 text=level.name,
                 variable=self.debug_levels[level],
             )
-            checkbox.grid(row=i, column=0, pady=5, padx=20, sticky="w")
+            checkbox.grid(row=i, column=0, pady=5, padx=(113, 0), sticky="w")
         
         # Create apply button
         self.apply_button = ctk.CTkButton(

@@ -20,15 +20,14 @@ class SubTest:
             # Log setting hi-pot voltage
             event_system.dispatch_event(EventType.LOG_EVENT, {
                 "message": f"Setting hi-pot tester to {self.voltage}V",
-                "level": LogLevel.INFO
+                "level": LogLevel.DEBUG
             })
             event_system.dispatch_event(EventType.SET_HIPOT_VOLTAGE, {"voltage": self.voltage})
 
             relays = test_number_to_relays[self.test_number]
-            # Log setting relays to open before measurement
             event_system.dispatch_event(EventType.LOG_EVENT, {
                 "message": f"Setting relays {relays} to open before measurement",
-                "level": LogLevel.INFO
+                "level": LogLevel.DEBUG
             })
             event_system.dispatch_event(EventType.SET_RELAYS, {
                 "relays": relays,
@@ -44,7 +43,7 @@ class SubTest:
             
             # Log measured current
             event_system.dispatch_event(EventType.LOG_EVENT, {
-                "message": f"Measured current: {self.current:.2f} mA",
+                "message": f"Measured current test {self.test_number}: {self.current:.2f} mA",
                 "level": LogLevel.INFO
             })
 
@@ -53,7 +52,7 @@ class SubTest:
                 self.status = "SUCCESS"
                 event_system.dispatch_event(EventType.LOG_EVENT, {
                     "message": f"Sub-test {self.test_number} passed.",
-                    "level": LogLevel.INFO
+                    "level": LogLevel.DEBUG
                 })
             else:
                 self.status = "FAILURE"
@@ -65,7 +64,7 @@ class SubTest:
             # Log setting relays to closed after measurement
             event_system.dispatch_event(EventType.LOG_EVENT, {
                 "message": f"Setting relays {relays} to closed after measurement",
-                "level": LogLevel.INFO
+                "level": LogLevel.DEBUG
             })
             event_system.dispatch_event(EventType.SET_RELAYS, {"relays": relays, "state": False})
 

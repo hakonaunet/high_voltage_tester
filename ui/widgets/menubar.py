@@ -5,7 +5,7 @@ from CTkMenuBar import CTkMenuBar, CustomDropdownMenu  # Ensure this module is a
 from utils import event_system
 from .relay_selection_window import RelaySelectionWindow
 from .debug_level_window import DebugLevelWindow
-from utils.event_system import event_system, EventType
+from utils.event_system import event_system, EventType, LogLevel
 from ui.debugger_panel import DebuggerPanel
 
 class MenuBar:
@@ -64,7 +64,7 @@ class MenuBar:
         event_system.dispatch_event(EventType.DEFAULT_RELAY_SELECTED, {"selected_relay": selected_relay})
 
     def verify_raspberry_pi_connection(self):
-        event_system.dispatch_event(EventType.VERIFY_RASPBERRY_PI_CONNECTION)
+        event_system.dispatch_event(EventType.VERIFY_RASPBERRY_PI_CONNECTION, {"level": LogLevel.INFO})
 
     def test_primary_relays(self):
         pass

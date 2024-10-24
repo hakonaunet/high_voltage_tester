@@ -46,7 +46,7 @@ class TestRunner:
             return
         
         self.serial_number = serial_number
-        event_system.dispatch_event(EventType.LOG_EVENT, {"message": "Test started.", "level": LogLevel.INFO})
+        event_system.dispatch_event(EventType.LOG_EVENT, {"message": "Test started.", "level": LogLevel.DEBUG})
         self.is_running = True
         self.results = []
         threading.Thread(target=self._execute_tests, daemon=True).start()
@@ -68,11 +68,6 @@ class TestRunner:
                 })
                 event_system.dispatch_event(EventType.TEST_TERMINATED, {"message": "Test terminated.", "level": LogLevel.INFO})
                 return
-
-            event_system.dispatch_event(EventType.LOG_EVENT, {
-                "message": "Hardware connection confirmed. Starting test execution.",
-                "level": LogLevel.INFO
-            })
 
             event_system.dispatch_event(EventType.PROGRESS_UPDATE, {"position": 1, "message": "Progress update: Position 1."})
             self.current_position = 1

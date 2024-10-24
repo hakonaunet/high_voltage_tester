@@ -53,9 +53,10 @@ class HardwareClient:
 
     def check_connection(self, event_data=None):  # Add event_data parameter with default None
         command = {'command': 'check_connection'}
+        debug_level = event_data.get('level', LogLevel.DEBUG) if event_data else LogLevel.DEBUG
         response = self.send_command(command)
         if response['status'] == 'success' and response['message'] == 'Connection established':
-            event_system.dispatch_event(EventType.LOG_EVENT, {"message": "Connection to Raspberry Pi server verified.", "level": LogLevel.INFO})
+            event_system.dispatch_event(EventType.LOG_EVENT, {"message": "Connection to Raspberry Pi server verified.", "level": debug_level})
             return True
         else:
             event_system.dispatch_event(EventType.LOG_EVENT, {"message": "Connection to Raspberry Pi server failed.", "level": LogLevel.ERROR})
